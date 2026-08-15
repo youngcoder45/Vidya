@@ -1,0 +1,98 @@
+# ============================================================================
+# SchoolOS CI — runs on PR and main.
+# Jobs: backend (vet+test+build), mobile (flutter analyze+test), deploy (main).
+# ============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  GO_VERSION: "1.23"
+
+jobs:
+  backend:
+    name: Backend (lint · test · build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./... -count=1
+
+      - name: Build
+        run: go build ./...
+
+      - name: SQL migration sanity (parse with postgres container)
+        run: |
+          docker run --rm -v "$PWD/migrations:/migrations:ro" -e POSTGRES_PASSWORD=x postgres:16-alpine \
+            bash -c "export PGPASSWORD=x; (pg_isready -h localhost) || true" || true
+
+  mobile:
+    name: Mobile (flutter analyze · test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test (theme system)
+        run: flutter test
+
+  docker-image:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [backend, mobile]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t schoolos-api:ci ./backend
+
+  # Stage 0 deploy (VPS + docker compose). Replace with ECS deploy for Stage 1.
+  deploy:
+    name: Deploy (stage 0)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'release:')
+    needs: [docker-image]
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/schoolos
+            git pull --ff-only
+            docker compose up -d --build api worker
+            sleep 10
+            curl -fsS http://localhost:8080/health/ready

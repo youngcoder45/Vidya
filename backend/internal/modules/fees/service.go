@@ -1,0 +1,294 @@
+package fees
+
+import (
+	"bytes"
+	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"sort"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+// ErrOutstandingMismatch is returned when allocations don't match the
+// available outstanding amount.
+var ErrOutstandingMismatch = errors.New("fees: payment amount exceeds outstanding dues")
+
+// PaymentGateway abstracts an online payment provider (Razorpay today).
+type PaymentGateway interface {
+	CreateOrder(ctx context.Context, in CreateOrderInput) (*GatewayOrder, error)
+}
+
+// CreateOrderInput is a gateway order request.
+type CreateOrderInput struct {
+	AmountINR int64
+	Currency  string
+	Receipt   string
+}
+
+// GatewayOrder is the gateway's response.
+type GatewayOrder struct {
+	GatewayOrderID string
+	KeyID          string
+}
+
+// RazorpayGateway implements PaymentGateway against the Razorpay Orders API.
+// When credentials are absent (dev), it returns a synthetic order id so the
+// whole flow is exercisable locally.
+type RazorpayGateway struct {
+	keyID     string
+	keySecret string
+	http      *http.Client
+}
+
+// NewRazorpayGateway creates the gateway.
+func NewRazorpayGateway(keyID, keySecret string) *RazorpayGateway {
+	return &RazorpayGateway{keyID: keyID, keySecret: keySecret, http: &http.Client{Timeout: 10 * time.Second}}
+}
+
+func (g *RazorpayGateway) CreateOrder(ctx context.Context, in CreateOrderInput) (*GatewayOrder, error) {
+	if g.keyID == "" || g.keySecret == "" {
+		// Dev mode: synthetic order so flows can be tested end-to-end.
+		return &GatewayOrder{GatewayOrderID: "rzp_test_" + uuid.NewString()[:16], KeyID: "rzp_test_dev_key"}, nil
+	}
+	body, _ := json.Marshal(map[string]any{
+		"amount":   in.AmountINR * 100, // paise
+		"currency": in.Currency,
+		"receipt":  in.Receipt,
+	})
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.razorpay.com/v1/orders", bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.SetBasicAuth(g.keyID, g.keySecret)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := g.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	raw, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("razorpay: order failed (%d): %s", resp.StatusCode, string(raw))
+	}
+	var out struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, err
+	}
+	return &GatewayOrder{GatewayOrderID: out.ID, KeyID: g.keyID}, nil
+}
+
+// Service implements fees use cases.
+type Service struct {
+	repo    Repository
+	gateway PaymentGateway
+	webhookSecret string
+	log     *slog.Logger
+}
+
+// NewService wires the fees service.
+func NewService(repo Repository, gateway PaymentGateway, webhookSecret string, log *slog.Logger) *Service {
+	return &Service{repo: repo, gateway: gateway, webhookSecret: webhookSecret, log: log}
+}
+
+// OfflinePaymentInput is a cash/UPI/cheque payment captured by office staff.
+type OfflinePaymentInput struct {
+	StudentID uuid.UUID
+	Mode      string
+	AmountINR int64
+	Notes     string
+	RecordedBy uuid.UUID
+}
+
+// CaptureOfflinePayment validates the amount against outstanding dues and
+// records the payment (append-only) with allocations.
+func (s *Service) CaptureOfflinePayment(ctx context.Context, schoolID uuid.UUID, in OfflinePaymentInput) (*Payment, error) {
+	ledgers, err := s.repo.ListLedgersByStudent(ctx, schoolID, in.StudentID)
+	if err != nil {
+		return nil, err
+	}
+	allocations, updates, err := computeAllocations(ledgers, in.AmountINR)
+	if err != nil {
+		return nil, err
+	}
+	p := &Payment{
+		ID: uuid.New(), SchoolID: schoolID, StudentID: in.StudentID,
+		ReceiptNo: s.nextReceiptNo(ctx, schoolID), AmountINR: in.AmountINR,
+		Mode: in.Mode, PaidAt: time.Now(), RecordedBy: in.RecordedBy, Notes: in.Notes,
+	}
+	if err := s.repo.CapturePayment(ctx, p, allocations, updates); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+// CreateOrderParams is a request to start an online payment.
+type CreateOrderParams struct {
+	StudentID uuid.UUID
+	AmountINR int64
+	CreatedBy uuid.UUID
+}
+
+// CreateOrder validates the amount and creates a gateway order.
+func (s *Service) CreateOrder(ctx context.Context, schoolID uuid.UUID, in CreateOrderParams) (*FeePaymentOrder, *GatewayOrder, error) {
+	ledgers, err := s.repo.ListLedgersByStudent(ctx, schoolID, in.StudentID)
+	if err != nil {
+		return nil, nil, err
+	}
+	totalOutstanding := int64(0)
+	for _, l := range ledgers {
+		if l.Status == LedgerDue || l.Status == LedgerPartial {
+			totalOutstanding += l.AmountINR - l.PaidAmountINR - l.ConcessionINR
+		}
+	}
+	if totalOutstanding < in.AmountINR {
+		return nil, nil, ErrOutstandingMismatch
+	}
+	order := &FeePaymentOrder{
+		ID: uuid.New(), SchoolID: schoolID, StudentID: in.StudentID,
+		AmountINR: in.AmountINR, Currency: "INR", Gateway: "razorpay",
+		Status: OrderPending, IdempotencyKey: uuid.NewString(), CreatedBy: in.CreatedBy,
+	}
+	if err := s.repo.CreateOrder(ctx, order); err != nil {
+		return nil, nil, err
+	}
+	gwOrder, err := s.gateway.CreateOrder(ctx, CreateOrderInput{
+		AmountINR: in.AmountINR, Currency: "INR", Receipt: order.ID.String(),
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	order.GatewayOrderID = gwOrder.GatewayOrderID
+	if err := s.repo.SetOrderGatewayID(ctx, order.ID, gwOrder.GatewayOrderID); err != nil {
+		return nil, nil, err
+	}
+	return order, gwOrder, nil
+}
+
+// RazorpayWebhookEvent is the subset of the Razorpay event payload we consume.
+type RazorpayWebhookEvent struct {
+	Event string `json:"event"`
+	Payload struct {
+		Payment struct {
+			Entity struct {
+				ID       string `json:"id"`
+				OrderID  string `json:"order_id"`
+				Amount   int64  `json:"amount"` // paise
+				Currency string `json:"currency"`
+				Status   string `json:"status"`
+			} `json:"entity"`
+		} `json:"payment"`
+	} `json:"payload"`
+}
+
+// VerifyWebhookSignature checks the X-Razorpay-Signature HMAC.
+func VerifyWebhookSignature(rawBody []byte, signature, secret string) bool {
+	if secret == "" {
+		return true // dev mode: accept unsigned webhooks
+	}
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(rawBody)
+	expected := hex.EncodeToString(mac.Sum(nil))
+	return hmac.Equal([]byte(expected), []byte(signature))
+}
+
+// HandleWebhook processes payment.captured events idempotently. The tenant is
+// derived from the matched order, never from the (unsigned) payload.
+func (s *Service) HandleWebhook(ctx context.Context, ev RazorpayWebhookEvent) error {
+	if ev.Event != "payment.captured" {
+		return nil // other events (order.paid etc.) are no-ops here
+	}
+	p := ev.Payload.Payment.Entity
+	order, err := s.repo.GetOrderByGatewayID(ctx, p.OrderID)
+	if err != nil {
+		return err
+	}
+	if order.Status == OrderCaptured {
+		return nil // idempotent: already captured
+	}
+	if p.Status != "captured" {
+		_ = s.repo.UpdateOrderStatus(ctx, order.ID, OrderFailed)
+		return nil
+	}
+	ledgers, err := s.repo.ListLedgersByStudent(ctx, order.SchoolID, order.StudentID)
+	if err != nil {
+		return err
+	}
+	amountINR := p.Amount / 100
+	allocations, updates, err := computeAllocations(ledgers, amountINR)
+	if err != nil {
+		return err
+	}
+	payment := &Payment{
+		ID: uuid.New(), SchoolID: order.SchoolID, StudentID: order.StudentID,
+		OrderID: &order.ID, ReceiptNo: s.nextReceiptNo(ctx, order.SchoolID),
+		AmountINR: amountINR, Mode: ModeOnline, GatewayRef: p.ID,
+		PaidAt: time.Now(), RecordedBy: order.CreatedBy,
+	}
+	if err := s.repo.CapturePayment(ctx, payment, allocations, updates); err != nil {
+		return err
+	}
+	return s.repo.UpdateOrderStatus(ctx, order.ID, OrderCaptured)
+}
+
+// computeAllocations splits amount across outstanding ledgers (oldest first)
+// and computes the resulting ledger states.
+func computeAllocations(ledgers []FeeLedger, amountINR int64) ([]PaymentAllocation, []FeeLedger, error) {
+	outstanding := make([]FeeLedger, 0, len(ledgers))
+	for _, l := range ledgers {
+		if l.Status == LedgerDue || l.Status == LedgerPartial {
+			outstanding = append(outstanding, l)
+		}
+	}
+	sort.Slice(outstanding, func(i, j int) bool { return outstanding[i].DueDate.Before(outstanding[j].DueDate) })
+
+	var remaining = amountINR
+	var allocations []PaymentAllocation
+	var updates []FeeLedger
+	for _, l := range outstanding {
+		if remaining <= 0 {
+			break
+		}
+		due := l.AmountINR - l.PaidAmountINR - l.ConcessionINR
+		if due <= 0 {
+			continue
+		}
+		alloc := due
+		if alloc > remaining {
+			alloc = remaining
+		}
+		allocations = append(allocations, PaymentAllocation{
+			ID: uuid.New(), SchoolID: l.SchoolID, FeeLedgerID: l.ID, AmountINR: alloc,
+		})
+		newPaid := l.PaidAmountINR + alloc
+		status := LedgerPartial
+		if newPaid >= l.AmountINR-l.ConcessionINR {
+			status = LedgerPaid
+		}
+		updates = append(updates, FeeLedger{ID: l.ID, PaidAmountINR: newPaid, Status: status})
+		remaining -= alloc
+	}
+	if remaining > 0 {
+		return nil, nil, ErrOutstandingMismatch
+	}
+	return allocations, updates, nil
+}
+
+func (s *Service) nextReceiptNo(ctx context.Context, schoolID uuid.UUID) string {
+	year := time.Now().Year()
+	n, err := s.repo.CountReceiptsForYear(ctx, schoolID, year)
+	if err != nil {
+		n = 0
+	}
+	return fmt.Sprintf("RCP-%d-%05d", year, n+1)
+}

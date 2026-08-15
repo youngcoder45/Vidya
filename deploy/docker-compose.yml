@@ -1,0 +1,97 @@
+# ============================================================================
+# SchoolOS — local development / MVP deployment (Stage 0)
+#
+#   docker compose up --build
+#
+# The API runs AutoMigrate in dev (APP_ENV=local) and seeds a demo school
+# (APP_SEED_ON_START=true). Production uses versioned SQL migrations applied
+# by CI, and RLS-enabled schema — see docs/07-deployment.md.
+# ============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: schoolos
+      POSTGRES_PASSWORD: schoolos
+      POSTGRES_DB: schoolos
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schoolos -d schoolos"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Do not publish to host in production; api reaches it over the network.
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ../backend
+    environment:
+      APP_ENV: local
+      APP_PORT: "8080"
+      APP_DB_HOST: postgres
+      APP_DB_PORT: "5432"
+      APP_DB_USER: schoolos
+      APP_DB_PASSWORD: schoolos
+      APP_DB_NAME: schoolos
+      APP_REDIS_ADDR: redis:6379
+      APP_JWT_SECRET: dev-secret-change-me-0123456789abcdef
+      APP_SEED_ON_START: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build:
+      context: ../backend
+    # Same image; the worker role is the notification fan-out consumer.
+    # Scaffold note: events are consumed in-process today; this service is
+    # the deployment seam for when the worker extracts (docs/06 §5).
+    command: ["/app/schoolos-api"]
+    environment:
+      APP_ENV: local
+      APP_PORT: "8090"
+      APP_DB_HOST: postgres
+      APP_DB_PORT: "5432"
+      APP_DB_USER: schoolos
+      APP_DB_PASSWORD: schoolos
+      APP_DB_NAME: schoolos
+      APP_REDIS_ADDR: redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  default:
+    name: schoolos

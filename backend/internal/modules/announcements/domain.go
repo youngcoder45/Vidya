@@ -41,12 +41,12 @@ type Announcement struct {
 	UpdatedAt               time.Time  `json:"updated_at"`
 }
 
-// AnnouncementRead tracks read receipts per user.
+// AnnouncementRead tracks read receipts per user (unique per announcement+user).
 type AnnouncementRead struct {
 	ID             uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	SchoolID       uuid.UUID `gorm:"type:uuid;not null;index" json:"school_id"`
-	AnnouncementID uuid.UUID `gorm:"type:uuid;not null;index:idx_ann_read" json:"announcement_id"`
-	UserID         uuid.UUID `gorm:"type:uuid;not null;index:idx_ann_read" json:"user_id"`
+	SchoolID       uuid.UUID `gorm:"type:uuid;not null" json:"school_id"`
+	AnnouncementID uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_ann_read,priority:1" json:"announcement_id"`
+	UserID         uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:idx_ann_read,priority:2" json:"user_id"`
 	ReadAt         time.Time `json:"read_at"`
 }
 

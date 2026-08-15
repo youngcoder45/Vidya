@@ -1,0 +1,20 @@
+# Go
+backend/bin/
+backend/.env
+*.test
+
+# Flutter / Dart
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins*
+mobile/.packages
+mobile/**/GeneratedPluginRegistrant.*
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Logs
+*.log
