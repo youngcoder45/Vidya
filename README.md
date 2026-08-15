@@ -12,6 +12,10 @@ full notification system, and a token-driven theme system with dark/light mode.
 
 ---
 
+> **New here?** If you're a beginner (or sending this to a non-programmer), follow
+> **[`SETUP.md`](SETUP.md)** — a from-scratch, click-by-click guide that gets the whole
+> stack running in a browser with zero programming knowledge.
+
 ## Monorepo layout
 
 ```
