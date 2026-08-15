@@ -16,26 +16,44 @@ import (
 	"github.com/schoolos/backend/internal/pkg/passwd"
 )
 
-// Permission catalog (code → name/module). Handlers reference these codes.
+// Permission catalog (code → name/module). Handlers reference these codes;
+// wildcard entries like "fees.*" grant every permission under that module.
 var permissionCatalog = []struct{ Code, Name, Module string }{
 	{"platform.schools.manage", "Manage schools (platform)", "platform"},
 	{"tenant.*", "Manage sessions/classes/subjects/teachers", "tenant"},
 	{"students.read", "View student profiles", "students"},
 	{"students.write", "Create/edit students", "students"},
+	{"students.*", "All student operations", "students"},
 	{"attendance.read", "View attendance", "attendance"},
 	{"attendance.mark", "Mark attendance", "attendance"},
+	{"attendance.*", "All attendance operations", "attendance"},
 	{"fees.read", "View fee data", "fees"},
 	{"fees.manage", "Manage fee structures", "fees"},
 	{"fees.payment.create", "Create fee payments", "fees"},
+	{"fees.*", "All fee operations", "fees"},
 	{"homework.read", "View homework", "homework"},
 	{"homework.write", "Create/grade homework", "homework"},
+	{"homework.*", "All homework operations", "homework"},
 	{"exams.read", "View exams and results", "exams"},
 	{"exams.manage", "Manage exams and marks", "exams"},
+	{"exams.*", "All exam operations", "exams"},
 	{"payroll.read", "View payroll", "payroll"},
 	{"payroll.manage", "Run payroll", "payroll"},
+	{"payroll.*", "All payroll operations", "payroll"},
 	{"announcements.read", "View announcements", "announcements"},
 	{"announcements.write", "Create/publish announcements", "announcements"},
+	{"announcements.*", "All announcement operations", "announcements"},
 	{"dashboard.read", "View dashboard", "dashboard"},
+}
+
+// Role definitions (code → name/description). Created idempotently.
+var roleDefinitions = []struct{ Code, Name, Description string }{
+	{"platform_admin", "Platform Admin", "Manages tenants and platform configuration"},
+	{"school_admin", "School Admin", "Runs the school: students, fees, exams, payroll, announcements"},
+	{"accountant", "Accountant", "Fee collection, receipts, financial reports"},
+	{"teacher", "Teacher", "Attendance, homework, marks for assigned classes"},
+	{"parent", "Parent", "Access to own children's data"},
+	{"student", "Student", "Access to own data"},
 }
 
 // Run applies the seed data idempotently.
@@ -54,16 +72,37 @@ func Run(db *gorm.DB, log *slog.Logger) error {
 }
 
 func seedPermissionsAndRoles(db *gorm.DB) error {
+	// 1. Roles (idempotent).
+	for _, r := range roleDefinitions {
+		var role auth.Role
+		err := db.Where("code = ?", r.Code).First(&role).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			role = auth.Role{ID: uuid.New(), Code: r.Code, Name: r.Name, Description: r.Description}
+			if err := db.Create(&role).Error; err != nil {
+				return err
+			}
+		} else if err != nil {
+			return err
+		}
+	}
+
+	// 2. Permissions (idempotent).
 	permByCode := map[string]auth.Permission{}
 	for _, p := range permissionCatalog {
-		perm := auth.Permission{ID: uuid.New(), Code: p.Code, Name: p.Name, Module: p.Module}
-		err := db.Where("code = ?", p.Code).FirstOrCreate(&perm).Error
-		if err != nil {
+		var perm auth.Permission
+		err := db.Where("code = ?", p.Code).First(&perm).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			perm = auth.Permission{ID: uuid.New(), Code: p.Code, Name: p.Name, Module: p.Module}
+			if err := db.Create(&perm).Error; err != nil {
+			return err
+			}
+		} else if err != nil {
 			return err
 		}
 		permByCode[p.Code] = perm
 	}
 
+	// 3. Role → permission grants (idempotent; composite PK acts as the key).
 	rolePerms := map[string][]string{
 		"school_admin": {"tenant.*", "students.*", "attendance.*", "fees.*", "homework.*", "exams.*", "payroll.*", "announcements.*", "dashboard.read"},
 		"accountant":   {"students.read", "fees.*", "dashboard.read"},
@@ -81,9 +120,14 @@ func seedPermissionsAndRoles(db *gorm.DB) error {
 			if !ok {
 				continue
 			}
-			rp := auth.RolePermission{RoleID: role.ID, PermissionID: perm.ID}
-			err := db.Where("role_id = ? AND permission_id = ?", role.ID, perm.ID).FirstOrCreate(&rp).Error
-			if err != nil {
+			var rp auth.RolePermission
+			err := db.Where("role_id = ? AND permission_id = ?", role.ID, perm.ID).First(&rp).Error
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				rp = auth.RolePermission{RoleID: role.ID, PermissionID: perm.ID}
+				if err := db.Create(&rp).Error; err != nil {
+					return err
+				}
+			} else if err != nil {
 				return err
 			}
 		}

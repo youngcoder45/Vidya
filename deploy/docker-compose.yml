@@ -61,37 +61,14 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health/ready"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/ready"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
-  worker:
-    build:
-      context: ../backend
-    # Same image; the worker role is the notification fan-out consumer.
-    # Scaffold note: events are consumed in-process today; this service is
-    # the deployment seam for when the worker extracts (docs/06 §5).
-    command: ["/app/schoolos-api"]
-    environment:
-      APP_ENV: local
-      APP_PORT: "8090"
-      APP_DB_HOST: postgres
-      APP_DB_PORT: "5432"
-      APP_DB_USER: schoolos
-      APP_DB_PASSWORD: schoolos
-      APP_DB_NAME: schoolos
-      APP_REDIS_ADDR: redis:6379
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+  # NOTE: a separate `worker` service (notification fan-out consumer) is a
+  # future extraction seam — events are consumed in-process today (docs/06 §5).
 
 volumes:
   pgdata:
   redisdata:
-
-networks:
-  default:
-    name: schoolos

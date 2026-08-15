@@ -1,6 +1,8 @@
 # ============================================================================
 # SchoolOS API — production image
-# Stage 1: build; Stage 2: distroless runtime (non-root).
+# Stage 1: build; Stage 2: minimal Alpine runtime (non-root).
+# (Alpine chosen over distroless so compose healthchecks can use curl; swap
+# for distroless in production and healthcheck from the orchestrator.)
 # ============================================================================
 
 FROM golang:1.23-alpine AS build
@@ -11,13 +13,11 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/schoolos-api ./cmd/server
 
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates curl && adduser -D -u 10001 app
 WORKDIR /app
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /out/schoolos-api /app/schoolos-api
-# Migrations are applied by a separate CI job; the image ships them read-only
-# for convenience (production uses golang-migrate applied before rollout).
 COPY migrations /app/migrations
+USER app
 EXPOSE 8080
-USER nonroot:nonroot
 ENTRYPOINT ["/app/schoolos-api"]

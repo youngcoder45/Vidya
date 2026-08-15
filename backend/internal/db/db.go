@@ -57,7 +57,7 @@ func Open(cfg *config.Config, log *slog.Logger) (*gorm.DB, error) {
 // MigrateDev runs AutoMigrate for the implemented modules (dev only).
 func MigrateDev(db *gorm.DB, log *slog.Logger) error {
 	models := []any{
-		&auth.User{}, &auth.Role{}, &auth.Permission{}, &auth.UserRole{},
+		&auth.User{}, &auth.Role{}, &auth.Permission{}, &auth.RolePermission{}, &auth.UserRole{},
 		&auth.UserDevice{}, &auth.AuthSession{}, &auth.OtpCode{},
 
 		&tenant.Plan{}, &tenant.School{}, &tenant.AcademicSession{},
