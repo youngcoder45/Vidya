@@ -60,7 +60,7 @@ class AuthRepository {
     return AuthSession.fromJson({
       'user': data,
       'school_id': null,
-      'roles': const [],
+      'roles': const <String>[],
     });
   }
 }

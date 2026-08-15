@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'semantics/app_semantics.dart';
 import 'tokens/app_spacing.dart';
-import 'tokens/app_typography.dart';
 
 /// The only sanctioned way widgets consume the theme.
 ///

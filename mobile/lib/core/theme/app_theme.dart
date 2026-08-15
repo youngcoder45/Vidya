@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'semantics/app_semantics.dart';
-import 'tokens/app_colors.dart';
 import 'tokens/app_radii.dart';
 import 'tokens/app_spacing.dart';
 import 'tokens/app_typography.dart';

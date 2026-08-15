@@ -19,7 +19,7 @@ class ApiClient {
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) =>
       _request(() => _dio.get(path, queryParameters: query));
 
-  Future<dynamic> post(String path, {Object? body}) => _request(() => _dio.post(path, data: body));
+  Future<dynamic> post(String path, {Object? body}) => _request(() => _dio.post<dynamic>(path, data: body));
 
   Future<dynamic> put(String path, {Object? body}) => _request(() => _dio.put(path, data: body));
 
@@ -46,7 +46,7 @@ class ApiClient {
     final refresh = await _store.readRefreshToken();
     if (refresh == null) return false;
     try {
-      final res = await _dio.post(
+      final res = await _dio.post<dynamic>(
         '${AppConfig.apiBaseUrl}/auth/refresh',
         data: {'refresh_token': refresh, 'device_id': await _store.deviceId()},
       );
@@ -62,10 +62,10 @@ class ApiClient {
     }
   }
 
-  ApiException _mapError(DioException e) {
+  Exception _mapError(DioException e) {
     final res = e.response;
     if (res == null) {
-      return NetworkException('No internet connection. Please try again.');
+      return const NetworkException('No internet connection. Please try again.');
     }
     try {
       final body = res.data is String ? jsonDecode(res.data as String) : res.data;

@@ -31,14 +31,14 @@ class AppScaffold extends StatelessWidget {
     final colors = context.colors;
     return Scaffold(
       appBar: AppBar(
-        title: Text(title, style: context.typography.title?.copyWith(color: colors.text)),
+        title: Text(title, style: context.typography.titleLarge?.copyWith(color: colors.text)),
         actions: actions,
       ),
       body: body,
       bottomNavigationBar: bottomNavIndex == null
           ? null
           : NavigationBar(
-              selectedIndex: bottomNavIndex,
+              selectedIndex: bottomNavIndex!,
               onDestinationSelected: onBottomNavTap,
               destinations: [
                 for (final (icon, label) in _navItems)

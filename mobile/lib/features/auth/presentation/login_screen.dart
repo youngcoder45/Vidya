@@ -65,7 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Text(
                     'School management, on your phone',
                     textAlign: TextAlign.center,
-                    style: context.typography.body?.copyWith(color: colors.textMuted),
+                    style: context.typography.bodyMedium?.copyWith(color: colors.textMuted),
                   ),
                   SizedBox(height: context.spaceXl),
                   TextFormField(
@@ -96,13 +96,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     SizedBox(height: context.spaceMd),
                     Text(
                       _error!,
-                      style: context.typography.label?.copyWith(color: colors.danger),
+                      style: context.typography.labelMedium?.copyWith(color: colors.danger),
                     ),
                   ],
                   SizedBox(height: context.spaceLg),
                   ElevatedButton(
                     onPressed: _submit,
-                    child: Text('Sign in', style: context.typography.bodyStrong),
+                    child: Text('Sign in', style: context.typography.bodyLarge),
                   ),
                   SizedBox(height: context.spaceLg),
                   TextButton(
@@ -111,7 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                     child: Text(
                       'Parent? Login with OTP',
-                      style: context.typography.label?.copyWith(color: colors.primary),
+                      style: context.typography.labelMedium?.copyWith(color: colors.primary),
                     ),
                   ),
                 ],

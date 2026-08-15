@@ -16,8 +16,10 @@ import (
 
 const rateWindow = time.Minute
 
-// Register wires the auth module routes onto the given group.
-func Register(rg *gin.RouterGroup, d *deps.Deps) {
+// RegisterPublic wires the unauthenticated auth routes (login, OTP, refresh).
+// These must NOT sit behind the JWT middleware — the router registers them on
+// the public group.
+func RegisterPublic(rg *gin.RouterGroup, d *deps.Deps) {
 	repo := NewRepository(d.DB)
 	svc := NewService(repo, d.Issuer, d.Cfg, d.Audit, d.Log)
 	h := &handler{svc: svc, repo: repo}
@@ -27,12 +29,22 @@ func Register(rg *gin.RouterGroup, d *deps.Deps) {
 	authGroup.POST("/otp/request", middleware.AuthRateLimit(d.RDB, d.Cfg.AuthRateLimitPerMin, rateWindow, d.Log), h.requestOtp)
 	authGroup.POST("/otp/verify", middleware.AuthRateLimit(d.RDB, d.Cfg.AuthRateLimitPerMin, rateWindow, d.Log), h.verifyOtp)
 	authGroup.POST("/refresh", h.refresh)
-	authGroup.POST("/logout", middleware.Auth(d.Issuer), middleware.Tenant(), h.logout)
-	authGroup.GET("/me", middleware.Auth(d.Issuer), middleware.Tenant(), h.me)
-	authGroup.GET("/devices", middleware.Auth(d.Issuer), middleware.Tenant(), h.devices)
-	authGroup.PUT("/devices/me", middleware.Auth(d.Issuer), middleware.Tenant(), h.updateDevice)
-	authGroup.POST("/devices/:deviceID/revoke", middleware.Auth(d.Issuer), middleware.Tenant(), h.revokeDevice)
-	authGroup.POST("/password/change", middleware.Auth(d.Issuer), middleware.Tenant(), h.changePassword)
+}
+
+// RegisterAuthed wires the authenticated auth routes. The router registers
+// these on the JWT+tenant-protected group, so no auth middleware is added here.
+func RegisterAuthed(rg *gin.RouterGroup, d *deps.Deps) {
+	repo := NewRepository(d.DB)
+	svc := NewService(repo, d.Issuer, d.Cfg, d.Audit, d.Log)
+	h := &handler{svc: svc, repo: repo}
+
+	authGroup := rg.Group("/auth")
+	authGroup.POST("/logout", h.logout)
+	authGroup.GET("/me", h.me)
+	authGroup.GET("/devices", h.devices)
+	authGroup.PUT("/devices/me", h.updateDevice)
+	authGroup.POST("/devices/:deviceID/revoke", h.revokeDevice)
+	authGroup.POST("/password/change", h.changePassword)
 }
 
 type handler struct {

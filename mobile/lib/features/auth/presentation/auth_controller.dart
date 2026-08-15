@@ -36,10 +36,10 @@ class AuthController extends Notifier<AuthState> {
         schoolId: session.schoolId,
         roles: session.roles,
       );
-    } on ApiException catch (e) {
+    } on ApiException {
       state = const AuthState.unauthenticated();
       rethrow;
-    } catch (e) {
+    } catch (_) {
       state = const AuthState.unauthenticated();
       rethrow;
     }

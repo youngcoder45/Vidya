@@ -37,14 +37,14 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Text(
               'Welcome, ${user?.fullName ?? 'there'} 👋',
-              style: context.typography.headline?.copyWith(color: context.colors.text),
+              style: context.typography.headlineMedium?.copyWith(color: context.colors.text),
             ),
             SizedBox(height: context.spaceMd),
             summary.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Text(
                 'Could not load dashboard: $e',
-                style: context.typography.body?.copyWith(color: context.colors.danger),
+                style: context.typography.bodyMedium?.copyWith(color: context.colors.danger),
               ),
               data: (s) => _SummaryGrid(summary: s),
             ),

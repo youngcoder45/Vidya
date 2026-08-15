@@ -45,7 +45,7 @@ class StatTile extends StatelessWidget {
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: context.typography.label?.copyWith(color: colors.textMuted),
+                      style: context.typography.labelMedium?.copyWith(color: colors.textMuted),
                     ),
                   ),
                 ],
@@ -53,7 +53,7 @@ class StatTile extends StatelessWidget {
               SizedBox(height: context.spaceSm),
               Text(
                 value,
-                style: context.typography.title?.copyWith(color: colors.text, fontWeight: FontWeight.w700),
+                style: context.typography.titleLarge?.copyWith(color: colors.text, fontWeight: FontWeight.w700),
               ),
             ],
           ),

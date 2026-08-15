@@ -48,12 +48,13 @@ func newRouter(d *deps.Deps) *gin.Engine {
 	rateLimiter := middleware.NewRateLimiter(d.RDB, d.Cfg.RateLimitPerMin, time.Minute, d.Log)
 	v1.Use(rateLimiter.Middleware())
 
-	// Public webhooks (signed, no JWT).
+	// Public routes (no JWT): webhooks (signed) + login/OTP/refresh.
 	fees.RegisterWebhook(v1, d)
+	auth.RegisterPublic(v1, d)
 
 	// Authenticated + tenant-scoped module routes.
 	api := v1.Group("", middleware.Auth(d.Issuer), middleware.Tenant())
-	auth.Register(api, d)
+	auth.RegisterAuthed(api, d)
 	tenant.Register(api, d)
 	students.Register(api, d)
 	attendance.Register(api, d)
