@@ -34,3 +34,19 @@ This repository contains:
 - CI/CD configuration
 
 The current scaffold implements the core School ERP functionality while keeping the architecture ready for additional modules.
+
+### Currently Implemented
+
+- Authentication
+- Multi-tenant school setup
+- Students
+- Attendance
+- Fees
+- Offline payments
+- Razorpay orders and webhooks
+- Announcements
+- Notifications
+- Dashboard
+- RBAC
+- Tenant isolation
+- Light/dark theme system
