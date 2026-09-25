@@ -12,3 +12,25 @@ SchoolOS is a mobile-first school management platform designed around a scalable
   <img src="https://img.shields.io/badge/Razorpay-Payments-528FF0" alt="Razorpay">
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white" alt="Docker">
 </p>
+
+
+---
+
+## Overview
+
+This repository contains:
+
+- Complete architecture documentation across **8 phases**
+- A compiling **Go backend scaffold**
+- A **Flutter mobile application**
+- PostgreSQL database schema and migrations
+- Redis integration
+- Multi-tenant data isolation
+- JWT authentication and RBAC
+- Razorpay payment integration
+- Notifications and announcements
+- Dashboard infrastructure
+- Docker-based local infrastructure
+- CI/CD configuration
+
+The current scaffold implements the core School ERP functionality while keeping the architecture ready for additional modules.
