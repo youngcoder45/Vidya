@@ -566,7 +566,7 @@ Please keep new functionality aligned with the existing module boundaries and ar
 
 ---
 
-# 📄 License
+# 📄 License   
 
 This project is currently **unlicensed**.
   
