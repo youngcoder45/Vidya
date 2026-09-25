@@ -569,5 +569,5 @@ Please keep new functionality aligned with the existing module boundaries and ar
 # 📄 License
 
 This project is currently **unlicensed**.
-
+  
 Add an appropriate license before distributing or accepting external contributions.
