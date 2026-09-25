@@ -9,7 +9,7 @@ full notification system, and a token-driven theme system with dark/light mode.
 > The scaffold implements working auth, tenant setup, students, attendance, fees
 > (offline + Razorpay order/webhook), announcements, notifications, and dashboard.
 > Homework/Exams/Payroll are designed & schema'd, registered as 501 stubs.
-
+  
 ---
 
 > **New here?** If you're a beginner (or sending this to a non-programmer), follow
