@@ -44,7 +44,7 @@ full notification system, and a token-driven theme system with dark/light mode.
 ├── deploy/                        # docker-compose (+ monitoring stack), prometheus
 └── .github/workflows/ci.yml       # backend + mobile CI, deploy gate
 ```
-
+   
 ---
 
 ## Quickstart (local)
