@@ -50,3 +50,13 @@ The current scaffold implements the core School ERP functionality while keeping 
 - RBAC
 - Tenant isolation
 - Light/dark theme system
+
+### Designed but Not Yet Implemented
+
+The following modules are fully designed and schema'd, but currently registered as `501 Not Implemented` stubs:
+
+- Homework
+- Examinations
+- Payroll
+
+---
