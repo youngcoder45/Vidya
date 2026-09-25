@@ -60,3 +60,11 @@ The following modules are fully designed and schema'd, but currently registered 
 - Payroll
 
 ---
+
+## New Here?
+
+If you're new to the project, start with **[`SETUP.md`](SETUP.md)**.
+
+It contains a beginner-friendly, from-scratch setup guide covering the entire stack and getting the project running locally.
+
+---
