@@ -1,0 +1,59 @@
+# SchoolOS Proprietary License
+
+Copyright (c) 2026 Aditya Verma. All rights reserved.
+
+## 1. Permission
+
+Permission is granted to view, study, and use this source code for personal, educational, and non-commercial purposes.
+
+You may:
+
+* View and inspect the source code.
+* Download and run the software for personal or educational purposes.
+* Modify the source code for personal or educational use.
+* Create private forks for personal or educational purposes.
+* Use the architecture and implementation as a reference for learning.
+
+## 2. Restrictions
+
+Without prior written permission from the copyright holder, you may not:
+
+* Use this software or substantial portions of its source code for commercial purposes.
+* Sell, sublicense, or redistribute the software or derivative works.
+* Offer the software as a hosted, managed, or SaaS service.
+* Include the software or substantial portions of its source code in a commercial product.
+* Publish or distribute modified versions of the software.
+* Remove or alter copyright, license, or attribution notices.
+* Claim ownership of the original source code or substantial portions of it.
+
+## 3. Contributions
+
+Unless otherwise agreed in writing, contributions submitted to this repository are provided under the same license as the project.
+
+By submitting a contribution, you represent that you have the necessary rights to submit it and that doing so does not violate any third-party rights.
+
+## 4. Third-Party Software
+
+This license applies only to the original SchoolOS source code.
+
+Third-party libraries, frameworks, assets, and other dependencies remain subject to their respective licenses. Nothing in this license grants permission to use third-party software beyond the rights provided by its applicable license.
+
+## 5. Trademarks
+
+The names **SchoolOS**, associated logos, branding, and other project identifiers may not be used to imply endorsement, affiliation, or official association without prior written permission.
+
+## 6. Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+
+IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## 7. Commercial Licensing
+
+Commercial use may be permitted under a separate commercial license.
+
+For commercial licensing, SaaS deployment, redistribution, or other uses not permitted by this license, contact the copyright holder to obtain written permission.
+
+---
+
+Copyright (c) 2026 Aditya Verma. All rights reserved.
