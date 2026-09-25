@@ -4,7 +4,7 @@ Production-ready architecture + runnable scaffold for a multi-tenant school ERP:
 **Flutter** apps (Android/iOS/tablet, mobile-first), **Go** modular-monolith API,
 **PostgreSQL** + **Redis**, Razorpay online fees, RBAC + JWT, tenant isolation,
 full notification system, and a token-driven theme system with dark/light mode.
-
+ 
 > **This repo = all 8 phases of architecture docs + a compiling monorepo scaffold.**
 > The scaffold implements working auth, tenant setup, students, attendance, fees
 > (offline + Razorpay order/webhook), announcements, notifications, and dashboard.
