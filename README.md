@@ -88,7 +88,7 @@ cd mobile && flutter pub get && flutter run
 
 ---
 
-## Status
+## Status 
 
 - **Docs:** Phases 1–8 complete.
 - **Backend:** compiles clean (`go build ./...`, `go vet ./...` pass — verified with Go 1.23).
