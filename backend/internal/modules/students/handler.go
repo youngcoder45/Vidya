@@ -43,6 +43,20 @@ type guardianInput struct {
 	IsPrimary bool   `json:"is_primary"`
 }
 
+// updateStudentRequest is an explicit allow-list: clients cannot rewrite
+// status, id, or timestamps through the update endpoint.
+type updateStudentRequest struct {
+	AdmissionNo  *string    `json:"admission_no"`
+	FirstName    *string    `json:"first_name"`
+	LastName     *string    `json:"last_name"`
+	DOB          *time.Time `json:"dob"`
+	Gender       *string    `json:"gender"`
+	BloodGroup   *string    `json:"blood_group"`
+	Address      *string    `json:"address"`
+	MedicalNotes *string    `json:"medical_notes"`
+	PhotoURL     *string    `json:"photo_url"`
+}
+
 type createStudentRequest struct {
 	FirstName   string          `json:"first_name" binding:"required"`
 	LastName    string          `json:"last_name"`
@@ -138,9 +152,37 @@ func (h *handler) update(c *gin.Context) {
 		httpx.WriteError(c, httpx.ErrNotFound)
 		return
 	}
-	if err := c.ShouldBindJSON(existing); err != nil {
+	var req updateStudentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		httpx.WriteError(c, httpx.ErrValidation.WithDetails(err.Error()))
 		return
+	}
+	if req.AdmissionNo != nil {
+		existing.AdmissionNo = *req.AdmissionNo
+	}
+	if req.FirstName != nil {
+		existing.FirstName = *req.FirstName
+	}
+	if req.LastName != nil {
+		existing.LastName = *req.LastName
+	}
+	if req.DOB != nil {
+		existing.DOB = *req.DOB
+	}
+	if req.Gender != nil {
+		existing.Gender = *req.Gender
+	}
+	if req.BloodGroup != nil {
+		existing.BloodGroup = *req.BloodGroup
+	}
+	if req.Address != nil {
+		existing.Address = *req.Address
+	}
+	if req.MedicalNotes != nil {
+		existing.MedicalNotes = *req.MedicalNotes
+	}
+	if req.PhotoURL != nil {
+		existing.PhotoURL = *req.PhotoURL
 	}
 	if err := h.repo.UpdateStudent(c.Request.Context(), existing); err != nil {
 		httpx.WriteError(c, err)
