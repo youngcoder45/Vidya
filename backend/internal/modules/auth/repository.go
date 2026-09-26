@@ -33,6 +33,7 @@ type Repository interface {
 	RevokeDevice(ctx context.Context, schoolID, userID uuid.UUID, deviceID string) error
 
 	CreateOtp(ctx context.Context, o *OtpCode) error
+	InvalidateOtps(ctx context.Context, schoolID uuid.UUID, phone, purpose string) error
 	FindLatestOtp(ctx context.Context, schoolID uuid.UUID, phone, purpose string) (*OtpCode, error)
 	MarkOtpVerified(ctx context.Context, id uuid.UUID) error
 	IncrementOtpAttempts(ctx context.Context, id uuid.UUID) error
@@ -172,6 +173,13 @@ func (r *GormRepo) RevokeDevice(ctx context.Context, schoolID, userID uuid.UUID,
 }
 
 func (r *GormRepo) CreateOtp(ctx context.Context, o *OtpCode) error { return r.db.WithContext(ctx).Create(o).Error }
+
+func (r *GormRepo) InvalidateOtps(ctx context.Context, schoolID uuid.UUID, phone, purpose string) error {
+	// Mark outstanding codes consumed so only the newest one can be used.
+	return r.db.WithContext(ctx).Model(&OtpCode{}).
+		Where("school_id = ? AND phone = ? AND purpose = ? AND verified_at IS NULL", schoolID, phone, purpose).
+		Update("verified_at", gorm.Expr("NOW()")).Error
+}
 
 func (r *GormRepo) FindLatestOtp(ctx context.Context, schoolID uuid.UUID, phone, purpose string) (*OtpCode, error) {
 	var o OtpCode

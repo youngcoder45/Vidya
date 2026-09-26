@@ -89,6 +89,10 @@ func (s *Service) Login(ctx context.Context, identifier, password string, dev De
 // RequestOtp creates and "sends" an OTP. In dev the OTP is logged; the SMS
 // adapter is the production channel.
 func (s *Service) RequestOtp(ctx context.Context, schoolID uuid.UUID, phone, purpose string) error {
+	// Supersede any still-valid codes for this phone/purpose.
+	if err := s.repo.InvalidateOtps(ctx, schoolID, phone, purpose); err != nil {
+		return err
+	}
 	code, err := randutil.Digits(6)
 	if err != nil {
 		return err
