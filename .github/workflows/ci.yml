@@ -37,6 +37,11 @@ jobs:
       - name: Build
         run: go build ./...
 
+      - name: Vulnerability scan (govulncheck)
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
       - name: SQL migration sanity (apply against postgres)
         run: |
           docker run --rm -d --name pg -e POSTGRES_PASSWORD=x -p 5432:5432 postgres:16-alpine
