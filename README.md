@@ -252,23 +252,21 @@ The system supports:
 
 ---
 
-# 🚀 Getting Started
+# 🚀 How to Run SchoolOS
 
-> **New to the project?**
-> Start with [`SETUP.md`](SETUP.md) for a complete, beginner-friendly setup guide.
+There are two ways to run this app:
+
+* **Option A — Docker (recommended first run):** one command starts the database, cache, and API, seeds demo data, and is ready to serve the Flutter app.
+* **Option B — Local development:** run PostgreSQL/Redis in Docker, the Go API with the Go toolchain, and the Flutter app separately. Best when you are editing code.
+
+> Prefer a click-by-click walkthrough? See [`SETUP.md`](SETUP.md).
 
 ## Prerequisites
 
-Make sure you have:
-
-* [Docker](https://docs.docker.com/get-docker/)
-* [Go 1.23+](https://go.dev/dl/)
-* [Flutter](https://docs.flutter.dev/get-started/install)
+* [Docker](https://docs.docker.com/get-docker/) (with the Compose plugin)
+* [Go 1.23+](https://go.dev/dl/) — only for Option B
+* [Flutter](https://docs.flutter.dev/get-started/install) — to run the mobile/web app
 * Git
-
----
-
-## 1. Clone the Repository
 
 ```bash
 git clone <your-repository-url>
@@ -277,75 +275,116 @@ cd SchoolOS
 
 ---
 
-## 2. Start Infrastructure
+## Option A — Run everything with Docker
+
+```bash
+docker compose -f deploy/docker-compose.yml up --build
+```
+
+This starts PostgreSQL, Redis, and the API. On first boot the API runs dev migrations and seeds a demo school (2 students + demo accounts). Leave the terminal open.
+
+```bash
+# In a second terminal — confirm the API is healthy
+curl -s http://localhost:8080/health/ready
+# => {"db":"up","status":"ready"}
+```
+
+The API is now at `http://localhost:8080`. To stop it:
+
+```bash
+docker compose -f deploy/docker-compose.yml down     # keep data
+docker compose -f deploy/docker-compose.yml down -v  # wipe data and start fresh
+```
+
+---
+
+## Option B — Run locally
+
+### 1. Start the infrastructure (PostgreSQL + Redis)
 
 ```bash
 docker compose -f deploy/docker-compose.yml up -d postgres redis
 ```
 
----
-
-## 3. Configure the Backend
+### 2. Configure and start the API
 
 ```bash
 cd backend
-cp .env.example .env
+cp .env.example .env        # defaults work for local development
+make run                    # or: APP_SEED_ON_START=true go run ./cmd/server
+```
+
+The API listens on `http://localhost:8080`. In local mode the schema is created by GORM `AutoMigrate`; production uses the versioned SQL migrations via `make migrate` (see `APP_MIGRATE_ON_START` in `.env.example`).
+
+### 3. Run the Flutter app
+
+The API base URL depends on where the app runs. Pass it with `--dart-define`:
+
+| Target | `API_BASE_URL` |
+| ------ | -------------- |
+| Web / desktop | `http://localhost:8080/api/v1` |
+| Android emulator | `http://10.0.2.2:8080/api/v1` |
+| iOS simulator | `http://localhost:8080/api/v1` |
+| Physical device | `http://<your-computer-LAN-IP>:8080/api/v1` |
+
+```bash
+cd mobile
+flutter pub get
+
+# Web example (open the printed URL in a browser):
+flutter run -d web-server --web-port 8081 \
+  --dart-define=API_BASE_URL=http://localhost:8080/api/v1
 ```
 
 ---
 
-## 4. Start the API
+## Verify it works
 
 ```bash
-make run
-```
-
-Or:
-
-```bash
-APP_SEED_ON_START=true go run ./cmd/server
-```
-
-The API will be available at:
-
-```text
-http://localhost:8080
-```
-
----
-
-## 5. Verify the API
-
-```bash
+# 1. Health check
 curl -s http://localhost:8080/health/ready
-```
 
----
-
-## 6. Test Authentication
-
-```bash
+# 2. Log in (same call the app makes)
 curl -s -X POST http://localhost:8080/api/v1/auth/login \
   -H 'Content-Type: application/json' \
   -d '{
     "identifier": "principal@greenwood.edu",
     "password": "admin12345",
-    "device": {
-      "device_id": "dev-1"
-    }
+    "device": { "device_id": "dev-1" }
   }'
+```
+
+The response contains an `access_token` and the user's `roles`. Use the demo credentials below to sign in from the app.
+
+---
+
+## Run the checks
+
+```bash
+# Backend
+cd backend
+make vet           # go vet ./...
+make test          # go test ./...
+make build         # compile the server binary
+
+# Mobile
+cd mobile
+flutter analyze
+flutter test
 ```
 
 ---
 
-## 7. Run the Flutter App
+## Troubleshooting
 
-```bash
-cd mobile
-
-flutter pub get
-flutter run
-```
+| Symptom | Fix |
+| ------- | --- |
+| `docker: unknown shorthand flag: 'f'` | The Compose plugin is missing — install `docker-compose-plugin`. |
+| Port `5432` / `6379` / `8080` already in use | Another service is using it. Stop it, or run `docker compose -f deploy/docker-compose.yml down` first. |
+| Login returns `INVALID_CREDENTIALS` | Demo data did not seed. Run `docker compose -f deploy/docker-compose.yml down -v` then `up --build` again with `APP_SEED_ON_START=true`. |
+| App shows "Could not load dashboard" | The API URL is wrong for your target — check the `--dart-define=API_BASE_URL` table above. |
+| `flutter: command not found` | Add Flutter's `bin` to your `PATH`, then open a new terminal. |
+| Android device blocks plain HTTP | The API uses `http://` in local dev; use the emulator host `10.0.2.2` or run the web target. |
 
 ---
 
