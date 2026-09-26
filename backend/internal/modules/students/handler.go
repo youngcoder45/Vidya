@@ -1,6 +1,7 @@
 package students
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -255,6 +256,10 @@ func (h *handler) promote(c *gin.Context) {
 		return
 	}
 	if err := h.repo.Promote(c.Request.Context(), tc.SchoolID, studentID, req.FromSessionID, req.ToSessionID, req.ToClassDivisionID, req.RollNo); err != nil {
+		if errors.Is(err, ErrTargetClassNotFound) {
+			httpx.WriteError(c, httpx.ErrValidation.WithDetails("target class is not part of the target session"))
+			return
+		}
 		httpx.WriteError(c, err)
 		return
 	}

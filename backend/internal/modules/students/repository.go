@@ -2,6 +2,7 @@ package students
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,6 +10,10 @@ import (
 
 	"github.com/schoolos/backend/internal/pkg/httpx"
 )
+
+// ErrTargetClassNotFound means the promotion target class does not belong to
+// the school/session.
+var ErrTargetClassNotFound = errors.New("students: target class not found in session")
 
 // Repository is the persistence port for the students module.
 type Repository interface {
@@ -150,6 +155,15 @@ func (r *GormRepo) ListRoster(ctx context.Context, schoolID, sessionID, classDiv
 
 func (r *GormRepo) Promote(ctx context.Context, schoolID, studentID, fromSessionID, toSessionID, toClassDivisionID uuid.UUID, rollNo int) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var target int64
+		if err := tx.Table("class_divisions").
+			Where("school_id = ? AND id = ? AND session_id = ?", schoolID, toClassDivisionID, toSessionID).
+			Count(&target).Error; err != nil {
+			return err
+		}
+		if target == 0 {
+			return ErrTargetClassNotFound
+		}
 		if err := tx.Model(&StudentEnrollment{}).
 			Where("school_id = ? AND student_id = ? AND session_id = ?", schoolID, studentID, fromSessionID).
 			Update("status", EnrollmentPromoted).Error; err != nil {
