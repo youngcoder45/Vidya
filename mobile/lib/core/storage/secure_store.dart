@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,7 +31,11 @@ class SecureStore {
   Future<String> deviceId() async {
     final existing = _prefs.getString(_deviceIdKey);
     if (existing != null) return existing;
-    final id = DateTime.now().microsecondsSinceEpoch.toString();
+    // Random, not derived from the clock: a predictable device id is spoofable.
+    final rnd = Random.secure();
+    final id = List<int>.generate(16, (_) => rnd.nextInt(256))
+        .map((b) => b.toRadixString(16).padLeft(2, '0'))
+        .join();
     await _prefs.setString(_deviceIdKey, id);
     return id;
   }
