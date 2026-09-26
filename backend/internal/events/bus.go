@@ -14,29 +14,39 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	queueSize = 1024
+	workers   = 4
+)
+
 // Event is a domain event envelope.
 type Event struct {
-	ID        uuid.UUID
-	Type      string
-	SchoolID  uuid.UUID
-	UserID    uuid.UUID
+	ID         uuid.UUID
+	Type       string
+	SchoolID   uuid.UUID
+	UserID     uuid.UUID
 	OccurredAt time.Time
-	Payload   any
+	Payload    any
 }
 
 // Handler processes a single event.
 type Handler func(ctx context.Context, ev Event)
 
-// Bus fans out events to registered handlers asynchronously.
+// Bus fans out events to registered handlers through a bounded worker pool.
 type Bus struct {
 	mu       sync.RWMutex
 	handlers []Handler
 	log      *slog.Logger
+	queue    chan Event
 }
 
-// New creates a Bus.
+// New creates a Bus and starts its workers.
 func New(log *slog.Logger) *Bus {
-	return &Bus{log: log}
+	b := &Bus{log: log, queue: make(chan Event, queueSize)}
+	for i := 0; i < workers; i++ {
+		go b.worker()
+	}
+	return b
 }
 
 // Subscribe registers a handler for all events.
@@ -46,15 +56,32 @@ func (b *Bus) Subscribe(h Handler) {
 	b.handlers = append(b.handlers, h)
 }
 
-// Publish enqueues an event for async dispatch.
-func (b *Bus) Publish(ctx context.Context, ev Event) {
+// Publish enqueues an event for async dispatch. When the queue is full the
+// event is dropped (with a log) rather than spawning an unbounded goroutine.
+func (b *Bus) Publish(_ context.Context, ev Event) {
+	select {
+	case b.queue <- ev:
+	default:
+		b.log.Warn("event bus queue full, dropping event", "type", ev.Type)
+	}
+}
+
+func (b *Bus) worker() {
+	// Handlers must not depend on the publisher's request context, which may
+	// already be canceled by the time the event is processed.
+	for ev := range b.queue {
+		b.dispatch(context.Background(), ev)
+	}
+}
+
+func (b *Bus) dispatch(ctx context.Context, ev Event) {
 	b.mu.RLock()
 	handlers := make([]Handler, len(b.handlers))
 	copy(handlers, b.handlers)
 	b.mu.RUnlock()
 
 	for _, h := range handlers {
-		go func(h Handler) {
+		func(h Handler) {
 			defer func() {
 				if r := recover(); r != nil {
 					b.log.Error("event handler panicked", "type", ev.Type, "panic", r)
