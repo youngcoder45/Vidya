@@ -37,10 +37,16 @@ jobs:
       - name: Build
         run: go build ./...
 
-      - name: SQL migration sanity (parse with postgres container)
+      - name: SQL migration sanity (apply against postgres)
         run: |
-          docker run --rm -v "$PWD/migrations:/migrations:ro" -e POSTGRES_PASSWORD=x postgres:16-alpine \
-            bash -c "export PGPASSWORD=x; (pg_isready -h localhost) || true" || true
+          docker run --rm -d --name pg -e POSTGRES_PASSWORD=x -p 5432:5432 postgres:16-alpine
+          for i in $(seq 1 30); do
+            docker exec pg pg_isready -U postgres && break
+            sleep 1
+          done
+          docker cp migrations/001_init.sql pg:/tmp/001_init.sql
+          docker exec -e PGPASSWORD=x pg psql -U postgres -v ON_ERROR_STOP=1 -f /tmp/001_init.sql
+          docker rm -f pg
 
   mobile:
     name: Mobile (flutter analyze · test)
