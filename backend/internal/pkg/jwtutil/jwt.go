@@ -10,6 +10,9 @@ import (
 	"github.com/google/uuid"
 )
 
+// tokenIssuer is the expected `iss` claim for access tokens.
+const tokenIssuer = "schoolos"
+
 // Claims is the JWT payload. school_id and roles[] are the primary
 // authorization inputs for tenant scoping and RBAC.
 type Claims struct {
@@ -44,6 +47,7 @@ func (i *Issuer) Issue(userID, schoolID uuid.UUID, roles, permissions []string, 
 		DeviceID:    deviceID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userID.String(),
+			Issuer:    tokenIssuer,
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(exp),
 			ID:        uuid.NewString(),
@@ -64,7 +68,7 @@ func (i *Issuer) Parse(raw string) (*Claims, error) {
 			return nil, errors.New("jwt: unexpected signing method")
 		}
 		return i.secret, nil
-	})
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}), jwt.WithIssuer(tokenIssuer))
 	if err != nil {
 		return nil, err
 	}
