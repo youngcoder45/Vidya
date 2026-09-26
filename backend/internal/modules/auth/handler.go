@@ -119,6 +119,10 @@ func (h *handler) verifyOtp(c *gin.Context) {
 			httpx.WriteError(c, httpx.NewError(http.StatusUnauthorized, "INVALID_OTP", "invalid or expired OTP"))
 			return
 		}
+		if errors.Is(err, ErrPasswordResetUnsupported) {
+			httpx.WriteError(c, httpx.NewError(http.StatusNotImplemented, "PASSWORD_RESET_NOT_IMPLEMENTED", "password reset is not available yet"))
+			return
+		}
 		httpx.WriteError(c, err)
 		return
 	}

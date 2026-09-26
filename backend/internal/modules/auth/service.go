@@ -28,6 +28,8 @@ var (
 	ErrInvalidOtp = errors.New("auth: invalid or expired otp")
 	// ErrInvalidRefresh covers unknown/revoked refresh tokens.
 	ErrInvalidRefresh = errors.New("auth: invalid refresh token")
+	// ErrPasswordResetUnsupported guards the not-yet-implemented reset flow.
+	ErrPasswordResetUnsupported = errors.New("auth: password reset not implemented")
 )
 
 // DeviceInput describes the calling device for login/session tracking.
@@ -124,6 +126,10 @@ func (s *Service) VerifyOtp(ctx context.Context, schoolID uuid.UUID, phone, purp
 	}
 	if err := s.repo.MarkOtpVerified(ctx, otp.ID); err != nil {
 		return nil, err
+	}
+	if purpose == OtpPurposePasswordReset {
+		// A reset-purpose OTP must never mint a normal session.
+		return nil, ErrPasswordResetUnsupported
 	}
 
 	user, err := s.repo.FindUserByIdentity(ctx, &schoolID, phone)
