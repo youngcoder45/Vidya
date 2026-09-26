@@ -28,7 +28,7 @@ func RegisterPublic(rg *gin.RouterGroup, d *deps.Deps) {
 	authGroup.POST("/login", middleware.AuthRateLimit(d.RDB, d.Cfg.AuthRateLimitPerMin, rateWindow, d.Log), h.login)
 	authGroup.POST("/otp/request", middleware.AuthRateLimit(d.RDB, d.Cfg.AuthRateLimitPerMin, rateWindow, d.Log), h.requestOtp)
 	authGroup.POST("/otp/verify", middleware.AuthRateLimit(d.RDB, d.Cfg.AuthRateLimitPerMin, rateWindow, d.Log), h.verifyOtp)
-	authGroup.POST("/refresh", h.refresh)
+	authGroup.POST("/refresh", middleware.AuthRateLimit(d.RDB, d.Cfg.AuthRateLimitPerMin, rateWindow, d.Log), h.refresh)
 }
 
 // RegisterAuthed wires the authenticated auth routes. The router registers
