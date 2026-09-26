@@ -2,10 +2,15 @@ package auth
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+// ErrAmbiguousIdentity means the identifier matches users in more than one
+// tenant and the lookup was not tenant-scoped.
+var ErrAmbiguousIdentity = errors.New("auth: ambiguous identity across tenants")
 
 // Repository is the persistence port for the auth module.
 type Repository interface {
@@ -44,11 +49,19 @@ func (r *GormRepo) FindUserByIdentity(ctx context.Context, schoolID *uuid.UUID, 
 	if schoolID != nil {
 		q = q.Where("school_id = ?", *schoolID)
 	}
-	var u User
-	if err := q.First(&u).Error; err != nil {
+	var users []User
+	if err := q.Limit(2).Find(&users).Error; err != nil {
 		return nil, err
 	}
-	return &u, nil
+	switch len(users) {
+	case 0:
+		return nil, gorm.ErrRecordNotFound
+	case 1:
+		return &users[0], nil
+	default:
+		// Two tenants share this email/phone: refuse rather than pick one.
+		return nil, ErrAmbiguousIdentity
+	}
 }
 
 func (r *GormRepo) GetUserByID(ctx context.Context, id uuid.UUID) (*User, error) {

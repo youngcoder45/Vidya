@@ -69,7 +69,7 @@ func NewService(repo Repository, issuer *jwtutil.Issuer, cfg *config.Config, aud
 func (s *Service) Login(ctx context.Context, identifier, password string, dev DeviceInput) (*AuthResult, error) {
 	user, err := s.repo.FindUserByIdentity(ctx, nil, identifier)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, ErrAmbiguousIdentity) {
 			return nil, ErrInvalidCredentials
 		}
 		return nil, err
