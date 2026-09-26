@@ -60,7 +60,7 @@ type updateStudentRequest struct {
 type createStudentRequest struct {
 	FirstName   string          `json:"first_name" binding:"required"`
 	LastName    string          `json:"last_name"`
-	DOB         time.Time       `json:"dob"`
+	DOB         time.Time       `json:"dob" binding:"required"`
 	Gender      string          `json:"gender"`
 	BloodGroup  string          `json:"blood_group"`
 	Address     string          `json:"address"`
