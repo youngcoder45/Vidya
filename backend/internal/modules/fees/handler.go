@@ -20,7 +20,7 @@ import (
 func Register(rg *gin.RouterGroup, d *deps.Deps) {
 	repo := NewRepository(d.DB)
 	gateway := NewRazorpayGateway(d.Cfg.RazorpayKeyID, d.Cfg.RazorpayKeySecret)
-	svc := NewService(repo, gateway, d.Cfg.RazorpayWebhookSecret, d.Audit, d.Log)
+	svc := NewService(repo, gateway, d.Cfg.RazorpayWebhookSecret, d.Audit, d.Bus, d.Log)
 	h := &handler{svc: svc, repo: repo}
 
 	grp := rg.Group("/fees")
@@ -40,7 +40,7 @@ func Register(rg *gin.RouterGroup, d *deps.Deps) {
 func RegisterWebhook(rg *gin.RouterGroup, d *deps.Deps) {
 	repo := NewRepository(d.DB)
 	gateway := NewRazorpayGateway(d.Cfg.RazorpayKeyID, d.Cfg.RazorpayKeySecret)
-	svc := NewService(repo, gateway, d.Cfg.RazorpayWebhookSecret, d.Audit, d.Log)
+	svc := NewService(repo, gateway, d.Cfg.RazorpayWebhookSecret, d.Audit, d.Bus, d.Log)
 	h := &handler{svc: svc, repo: repo}
 	rg.POST("/webhooks/razorpay", h.razorpayWebhook)
 }

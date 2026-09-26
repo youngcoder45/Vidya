@@ -18,6 +18,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/schoolos/backend/internal/events"
 	"github.com/schoolos/backend/internal/pkg/audit"
 )
 
@@ -100,12 +101,31 @@ type Service struct {
 	gateway       PaymentGateway
 	webhookSecret string
 	audit         *audit.Writer
+	bus           *events.Bus
 	log           *slog.Logger
 }
 
 // NewService wires the fees service.
-func NewService(repo Repository, gateway PaymentGateway, webhookSecret string, auditWriter *audit.Writer, log *slog.Logger) *Service {
-	return &Service{repo: repo, gateway: gateway, webhookSecret: webhookSecret, audit: auditWriter, log: log}
+func NewService(repo Repository, gateway PaymentGateway, webhookSecret string, auditWriter *audit.Writer, bus *events.Bus, log *slog.Logger) *Service {
+	return &Service{repo: repo, gateway: gateway, webhookSecret: webhookSecret, audit: auditWriter, bus: bus, log: log}
+}
+
+// notifyPaid emits fees.paid to each registered guardian so the notification
+// subscriber can fan out. Best-effort: a failure never fails the payment.
+func (s *Service) notifyPaid(ctx context.Context, schoolID, studentID uuid.UUID, p *Payment) {
+	if s.bus == nil {
+		return
+	}
+	ids, err := s.repo.GuardianUserIDs(ctx, schoolID, studentID)
+	if err != nil {
+		s.log.Warn("guardian lookup failed for fee notification", "err", err)
+		return
+	}
+	for _, uid := range ids {
+		s.bus.Publish(ctx, events.NewEvent(EvFeePaid, schoolID, uid, map[string]any{
+			"payment_id": p.ID.String(), "amount_inr": p.AmountINR,
+		}))
+	}
 }
 
 // OfflinePaymentInput is a cash/UPI/cheque payment captured by office staff.
@@ -145,6 +165,7 @@ func (s *Service) CaptureOfflinePayment(ctx context.Context, schoolID uuid.UUID,
 		SchoolID: &schoolID, UserID: &in.RecordedBy, Action: "fees.offline_payment",
 		EntityType: "payment", EntityID: p.ID.String(),
 	})
+	s.notifyPaid(ctx, schoolID, in.StudentID, p)
 	return p, nil
 }
 
@@ -286,6 +307,7 @@ func (s *Service) HandleWebhook(ctx context.Context, ev RazorpayWebhookEvent) er
 		SchoolID: &order.SchoolID, Action: "fees.online_payment",
 		EntityType: "payment", EntityID: payment.ID.String(),
 	})
+	s.notifyPaid(ctx, order.SchoolID, order.StudentID, payment)
 	return s.repo.UpdateOrderStatus(ctx, order.ID, OrderCaptured)
 }
 
