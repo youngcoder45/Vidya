@@ -93,6 +93,6 @@ jobs:
           script: |
             cd /opt/schoolos
             git pull --ff-only
-            docker compose up -d --build api worker
+            docker compose up -d --build api
             sleep 10
             curl -fsS http://localhost:8080/health/ready
