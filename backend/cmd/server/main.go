@@ -46,6 +46,11 @@ func run() error {
 		if err := db.MigrateDev(dbConn, log); err != nil {
 			return err
 		}
+	} else if cfg.MigrateOnStart {
+		// Production schema is versioned SQL, applied once per file.
+		if err := db.MigrateSQL(context.Background(), dbConn, cfg.MigrationsDir, log); err != nil {
+			return err
+		}
 	}
 
 	// Redis (optional at boot — in-memory fallbacks cover its absence).

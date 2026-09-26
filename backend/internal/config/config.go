@@ -42,6 +42,11 @@ type Config struct {
 	SeedOnStart    bool
 	RateLimitPerMin int
 	AuthRateLimitPerMin int
+
+	// MigrateOnStart applies versioned SQL migrations at boot (production).
+	// Leave off in local, where AutoMigrate owns the schema.
+	MigrateOnStart bool
+	MigrationsDir  string
 }
 
 // Load reads the environment (optionally a .env file) and validates it.
@@ -76,6 +81,9 @@ func Load() (*Config, error) {
 		SeedOnStart:     getBool("APP_SEED_ON_START", false),
 		RateLimitPerMin: getInt("APP_RATE_LIMIT_PER_MIN", 120),
 		AuthRateLimitPerMin: getInt("APP_AUTH_RATE_LIMIT_PER_MIN", 5),
+
+		MigrateOnStart: getBool("APP_MIGRATE_ON_START", false),
+		MigrationsDir:  get("APP_MIGRATIONS_DIR", "migrations"),
 	}
 
 	if cfg.AppEnv == "production" && len(cfg.JWTSecret) < 32 {
