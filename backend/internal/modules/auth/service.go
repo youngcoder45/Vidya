@@ -100,7 +100,11 @@ func (s *Service) RequestOtp(ctx context.Context, schoolID uuid.UUID, phone, pur
 		return err
 	}
 	// Channel adapter point: send OTP via SMS/WhatsApp/email here.
-	s.log.Info("otp generated (dev channel)", "school_id", schoolID, "phone", phone, "otp", code)
+	if s.cfg.AppEnv == "local" {
+		s.log.Info("otp generated (dev channel)", "school_id", schoolID, "phone", phone, "otp", code)
+	} else {
+		s.log.Info("otp generated", "school_id", schoolID, "phone", phone)
+	}
 	return nil
 }
 
