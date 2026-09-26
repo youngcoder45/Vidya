@@ -73,7 +73,13 @@ func (h *handler) create(c *gin.Context) {
 
 func (h *handler) list(c *gin.Context) {
 	tc := tenant.MustFrom(c.Request.Context())
-	list, err := h.repo.List(c.Request.Context(), tc.SchoolID, c.Query("status"))
+	// Only writers may inspect drafts; everyone else sees published only.
+	canManage := ctxuser.HasPermission(c.Request.Context(), "announcements.write")
+	status := c.Query("status")
+	if !canManage {
+		status = ""
+	}
+	list, err := h.repo.List(c.Request.Context(), tc.SchoolID, status, !canManage)
 	if err != nil {
 		httpx.WriteError(c, err)
 		return
@@ -95,6 +101,10 @@ func (h *handler) get(c *gin.Context) {
 			return
 		}
 		httpx.WriteError(c, err)
+		return
+	}
+	if a.Status != StatusPublished && !ctxuser.HasPermission(c.Request.Context(), "announcements.write") {
+		httpx.WriteError(c, httpx.ErrNotFound)
 		return
 	}
 	httpx.WriteJSON(c, http.StatusOK, a)

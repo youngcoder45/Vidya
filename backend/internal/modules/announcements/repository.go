@@ -12,7 +12,7 @@ import (
 // Repository is the persistence port for the announcements module.
 type Repository interface {
 	Create(ctx context.Context, a *Announcement) error
-	List(ctx context.Context, schoolID uuid.UUID, status string) ([]Announcement, error)
+	List(ctx context.Context, schoolID uuid.UUID, status string, publishedOnly bool) ([]Announcement, error)
 	Get(ctx context.Context, schoolID, id uuid.UUID) (*Announcement, error)
 	SetStatus(ctx context.Context, schoolID, id uuid.UUID, status string) error
 	MarkRead(ctx context.Context, schoolID, announcementID, userID uuid.UUID) error
@@ -30,9 +30,13 @@ func NewRepository(db *gorm.DB) *GormRepo { return &GormRepo{db: db} }
 
 func (r *GormRepo) Create(ctx context.Context, a *Announcement) error { return r.db.WithContext(ctx).Create(a).Error }
 
-func (r *GormRepo) List(ctx context.Context, schoolID uuid.UUID, status string) ([]Announcement, error) {
+func (r *GormRepo) List(ctx context.Context, schoolID uuid.UUID, status string, publishedOnly bool) ([]Announcement, error) {
 	q := r.db.WithContext(ctx).Where("school_id = ?", schoolID)
-	if status != "" {
+	if publishedOnly {
+		// Readers only ever see live, published announcements.
+		q = q.Where("status = ?", StatusPublished).
+			Where("(expires_at IS NULL OR expires_at > ?)", time.Now())
+	} else if status != "" {
 		q = q.Where("status = ?", status)
 	}
 	var out []Announcement
