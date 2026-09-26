@@ -13,6 +13,7 @@ import (
 	"log/slog"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -126,10 +127,24 @@ func (s *Service) CaptureOfflinePayment(ctx context.Context, schoolID uuid.UUID,
 		ReceiptNo: s.nextReceiptNo(ctx, schoolID), AmountINR: in.AmountINR,
 		Mode: in.Mode, PaidAt: time.Now(), RecordedBy: in.RecordedBy, Notes: in.Notes,
 	}
-	if err := s.repo.CapturePayment(ctx, p, allocations, updates); err != nil {
+	if err := s.captureWithReceiptRetry(ctx, schoolID, p, allocations, updates); err != nil {
 		return nil, err
 	}
 	return p, nil
+}
+
+// captureWithReceiptRetry records the payment, regenerating the receipt number
+// if a concurrent write claimed it first (count()+1 is not atomic).
+func (s *Service) captureWithReceiptRetry(ctx context.Context, schoolID uuid.UUID, p *Payment, allocations []PaymentAllocation, updates []FeeLedger) error {
+	var err error
+	for attempt := 0; attempt < 3; attempt++ {
+		err = s.repo.CapturePayment(ctx, p, allocations, updates)
+		if err == nil || !strings.Contains(err.Error(), "duplicate key") {
+			return err
+		}
+		p.ReceiptNo = s.nextReceiptNo(ctx, schoolID)
+	}
+	return err
 }
 
 // CreateOrderParams is a request to start an online payment.
@@ -235,7 +250,7 @@ func (s *Service) HandleWebhook(ctx context.Context, ev RazorpayWebhookEvent) er
 		AmountINR: amountINR, Mode: ModeOnline, GatewayRef: p.ID,
 		PaidAt: time.Now(), RecordedBy: order.CreatedBy,
 	}
-	if err := s.repo.CapturePayment(ctx, payment, allocations, updates); err != nil {
+	if err := s.captureWithReceiptRetry(ctx, order.SchoolID, payment, allocations, updates); err != nil {
 		return err
 	}
 	return s.repo.UpdateOrderStatus(ctx, order.ID, OrderCaptured)
