@@ -195,7 +195,7 @@ func (s *Service) Logout(ctx context.Context, userID uuid.UUID, sessionID uuid.U
 			return err
 		}
 	}
-	if claims, ok := ctxuser.From(ctx); ok {
+	if claims, ok := ctxuser.From(ctx); ok && deviceID != "" {
 		var schoolID *uuid.UUID
 		if claims.SchoolID != uuid.Nil {
 			schoolID = &claims.SchoolID
