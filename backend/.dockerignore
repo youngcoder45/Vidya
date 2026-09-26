@@ -1,0 +1,10 @@
+# Keep secrets and local build artifacts out of the image context.
+.env
+.env.*
+!.env.example
+bin/
+tmp/
+.git/
+.gitignore
+*.log
+coverage.out
