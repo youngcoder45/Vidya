@@ -1,6 +1,7 @@
 package attendance
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -71,6 +72,10 @@ func (h *handler) mark(c *gin.Context) {
 		httpx.WriteError(c, httpx.ErrValidation.WithDetails("date must be YYYY-MM-DD"))
 		return
 	}
+	if date.After(time.Now().AddDate(0, 0, 1)) {
+		httpx.WriteError(c, httpx.ErrValidation.WithDetails("date cannot be in the future"))
+		return
+	}
 	records := make([]AttendanceRecord, 0, len(req.Records))
 	for _, r := range req.Records {
 		if !ValidStatuses[r.Status] {
@@ -82,6 +87,23 @@ func (h *handler) mark(c *gin.Context) {
 			SubjectID: req.SubjectID, StudentID: r.StudentID, Date: date,
 			Status: r.Status, MarkedBy: markedBy,
 		})
+	}
+	// Verify every student is actually enrolled in this class/school.
+	ids := make([]uuid.UUID, 0, len(req.Records))
+	seen := make(map[uuid.UUID]struct{}, len(req.Records))
+	for _, r := range req.Records {
+		if _, ok := seen[r.StudentID]; !ok {
+			seen[r.StudentID] = struct{}{}
+			ids = append(ids, r.StudentID)
+		}
+	}
+	if err := h.repo.ValidateRoster(c.Request.Context(), tc.SchoolID, req.ClassDivisionID, ids); err != nil {
+		if errors.Is(err, ErrStudentNotInClass) {
+			httpx.WriteError(c, httpx.ErrValidation.WithDetails("one or more students are not enrolled in this class"))
+			return
+		}
+		httpx.WriteError(c, err)
+		return
 	}
 	if err := h.repo.UpsertDaily(c.Request.Context(), records); err != nil {
 		httpx.WriteError(c, err)

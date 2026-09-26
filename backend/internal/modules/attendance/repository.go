@@ -2,6 +2,7 @@ package attendance
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,9 +10,14 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// ErrStudentNotInClass means a marked student is not actively enrolled in the
+// given class/division within the school.
+var ErrStudentNotInClass = errors.New("attendance: student not enrolled in class")
+
 // Repository is the persistence port for the attendance module.
 type Repository interface {
 	UpsertDaily(ctx context.Context, records []AttendanceRecord) error
+	ValidateRoster(ctx context.Context, schoolID, classDivisionID uuid.UUID, studentIDs []uuid.UUID) error
 	ListByClassDate(ctx context.Context, schoolID, classDivisionID uuid.UUID, date time.Time) ([]AttendanceRecord, error)
 	ListByStudent(ctx context.Context, schoolID, studentID uuid.UUID, from, to time.Time) ([]AttendanceRecord, error)
 	ClassDailyPercentage(ctx context.Context, schoolID, classDivisionID uuid.UUID, date time.Time) (present, total int64, err error)
@@ -35,6 +41,24 @@ func (r *GormRepo) UpsertDaily(ctx context.Context, records []AttendanceRecord) 
 		},
 		DoUpdates: clause.AssignmentColumns([]string{"status", "subject_id", "edited_by", "edited_at", "updated_at"}),
 	}).Create(&records).Error
+}
+
+// ValidateRoster ensures every student has an active enrollment in the class.
+func (r *GormRepo) ValidateRoster(ctx context.Context, schoolID, classDivisionID uuid.UUID, studentIDs []uuid.UUID) error {
+	if len(studentIDs) == 0 {
+		return nil
+	}
+	var n int64
+	if err := r.db.WithContext(ctx).Table("student_enrollments").
+		Where("school_id = ? AND class_division_id = ? AND status = ? AND student_id IN ?",
+			schoolID, classDivisionID, "active", studentIDs).
+		Distinct("student_id").Count(&n).Error; err != nil {
+		return err
+	}
+	if int(n) != len(studentIDs) {
+		return ErrStudentNotInClass
+	}
+	return nil
 }
 
 func (r *GormRepo) ListByClassDate(ctx context.Context, schoolID, classDivisionID uuid.UUID, date time.Time) ([]AttendanceRecord, error) {
