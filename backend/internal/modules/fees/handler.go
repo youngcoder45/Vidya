@@ -244,6 +244,8 @@ func (h *handler) studentPayments(c *gin.Context) {
 }
 
 func (h *handler) razorpayWebhook(c *gin.Context) {
+	// Bound the body: webhooks are public and must not be able to exhaust memory.
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 256*1024)
 	raw, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		httpx.WriteError(c, httpx.ErrValidation)
