@@ -93,6 +93,9 @@ func Load() (*Config, error) {
 	if cfg.RateLimitPerMin <= 0 || cfg.AuthRateLimitPerMin <= 0 {
 		return nil, fmt.Errorf("config: rate limits must be > 0")
 	}
+	if cfg.AppEnv == "production" && len(cfg.CORSOrigins) == 1 && cfg.CORSOrigins[0] == "*" {
+		return nil, fmt.Errorf("config: APP_CORS_ORIGINS must be an explicit allow-list in production")
+	}
 	return cfg, nil
 }
 
