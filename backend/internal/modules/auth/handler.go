@@ -172,6 +172,10 @@ func (h *handler) me(c *gin.Context) {
 	uid := ctxuser.MustUserID(c.Request.Context())
 	user, err := h.svc.Me(c.Request.Context(), uid)
 	if err != nil {
+		if errors.Is(err, ErrUserSuspended) {
+			httpx.WriteError(c, httpx.NewError(http.StatusForbidden, "USER_SUSPENDED", "account is suspended"))
+			return
+		}
 		httpx.WriteError(c, httpx.ErrNotFound)
 		return
 	}

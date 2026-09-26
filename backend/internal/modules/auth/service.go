@@ -218,9 +218,16 @@ func (s *Service) Logout(ctx context.Context, userID uuid.UUID, sessionID uuid.U
 	return nil
 }
 
-// Me returns the authenticated user's profile.
+// Me returns the authenticated user's profile, rejecting suspended accounts.
 func (s *Service) Me(ctx context.Context, userID uuid.UUID) (*User, error) {
-	return s.repo.GetUserByID(ctx, userID)
+	u, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if u.Status != UserActive {
+		return nil, ErrUserSuspended
+	}
+	return u, nil
 }
 
 // ChangePassword verifies the old password and sets a new one.
