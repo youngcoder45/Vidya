@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/storage/secure_store.dart';
 import '../domain/auth_state.dart';
 
@@ -55,13 +56,21 @@ class AuthRepository {
 
   Future<AuthSession> restoreSession() async {
     // Token exists → assume authenticated until /auth/me proves otherwise.
-    final res = await _api.get('/auth/me');
-    final data = (res as Map<String, dynamic>)['data'] as Map<String, dynamic>;
-    return AuthSession.fromJson({
-      'user': data,
-      'school_id': null,
-      'roles': const <String>[],
-    });
+    try {
+      final res = await _api.get('/auth/me');
+      final data = (res as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      return AuthSession.fromJson({
+        'user': data,
+        'school_id': null,
+        'roles': const <String>[],
+      });
+    } on ApiException catch (e) {
+      // A rejected token is dead weight; drop it so login starts clean.
+      if (e.isUnauthorized) {
+        await _store.clearTokens();
+      }
+      rethrow;
+    }
   }
 }
 
