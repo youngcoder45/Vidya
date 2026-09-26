@@ -104,7 +104,9 @@ func (rl *RateLimiter) allowLocal(key string) bool {
 func AuthRateLimit(rdb *redis.Client, limit int, window time.Duration, log *slog.Logger) gin.HandlerFunc {
 	rl := NewRateLimiter(rdb, limit, window, log)
 	return func(c *gin.Context) {
-		key := "rl:auth:" + c.ClientIP() + ":" + c.GetHeader("X-Identifier")
+		// Key on IP + route only: X-Identifier is client-controlled and was
+		// trivially rotated to bypass the limit.
+		key := "rl:auth:" + c.FullPath() + ":" + c.ClientIP()
 		if !rl.allow(c.Request.Context(), key) {
 			c.JSON(http.StatusTooManyRequests, gin.H{"error": httpx.ErrRateLimited})
 			c.Abort()
