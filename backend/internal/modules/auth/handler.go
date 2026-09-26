@@ -222,7 +222,7 @@ func (h *handler) revokeDevice(c *gin.Context) {
 		httpx.WriteError(c, err)
 		return
 	}
-	_ = h.repo.RevokeSessionsByDevice(c.Request.Context(), schoolID, uid, deviceID)
+	_ = h.repo.RevokeSessionsByDevice(c.Request.Context(), &schoolID, uid, deviceID)
 	httpx.WriteJSON(c, http.StatusOK, gin.H{"revoked": true})
 }
 

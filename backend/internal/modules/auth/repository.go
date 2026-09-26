@@ -26,7 +26,7 @@ type Repository interface {
 	CreateSession(ctx context.Context, s *AuthSession) error
 	FindSessionByRefreshHash(ctx context.Context, hash string) (*AuthSession, error)
 	RevokeSession(ctx context.Context, id uuid.UUID) error
-	RevokeSessionsByDevice(ctx context.Context, schoolID, userID uuid.UUID, deviceID string) error
+	RevokeSessionsByDevice(ctx context.Context, schoolID *uuid.UUID, userID uuid.UUID, deviceID string) error
 
 	UpsertDevice(ctx context.Context, d *UserDevice) error
 	ListDevices(ctx context.Context, schoolID, userID uuid.UUID) ([]UserDevice, error)
@@ -130,10 +130,14 @@ func (r *GormRepo) RevokeSession(ctx context.Context, id uuid.UUID) error {
 		Update("revoked_at", gorm.Expr("NOW()")).Error
 }
 
-func (r *GormRepo) RevokeSessionsByDevice(ctx context.Context, schoolID, userID uuid.UUID, deviceID string) error {
-	return r.db.WithContext(ctx).Model(&AuthSession{}).
-		Where("school_id = ? AND user_id = ? AND device_id = ?", schoolID, userID, deviceID).
-		Update("revoked_at", gorm.Expr("NOW()")).Error
+func (r *GormRepo) RevokeSessionsByDevice(ctx context.Context, schoolID *uuid.UUID, userID uuid.UUID, deviceID string) error {
+	q := r.db.WithContext(ctx).Model(&AuthSession{}).Where("user_id = ? AND device_id = ?", userID, deviceID)
+	if schoolID == nil {
+		q = q.Where("school_id IS NULL")
+	} else {
+		q = q.Where("school_id = ?", *schoolID)
+	}
+	return q.Update("revoked_at", gorm.Expr("NOW()")).Error
 }
 
 func (r *GormRepo) UpsertDevice(ctx context.Context, d *UserDevice) error {

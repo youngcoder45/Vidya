@@ -124,7 +124,8 @@ CREATE INDEX idx_devices_user ON user_devices (school_id, user_id);
 
 CREATE TABLE auth_sessions (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    school_id          UUID NOT NULL REFERENCES schools(id),
+    -- NULL for platform admins, who belong to no school.
+    school_id          UUID REFERENCES schools(id),
     user_id            UUID NOT NULL REFERENCES users(id),
     device_id          TEXT,
     refresh_token_hash TEXT NOT NULL,

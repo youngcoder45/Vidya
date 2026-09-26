@@ -195,8 +195,12 @@ func (s *Service) Logout(ctx context.Context, userID uuid.UUID, sessionID uuid.U
 			return err
 		}
 	}
-	if claims, ok := ctxuser.From(ctx); ok && claims.SchoolID != uuid.Nil {
-		_ = s.repo.RevokeSessionsByDevice(ctx, claims.SchoolID, userID, deviceID)
+	if claims, ok := ctxuser.From(ctx); ok {
+		var schoolID *uuid.UUID
+		if claims.SchoolID != uuid.Nil {
+			schoolID = &claims.SchoolID
+		}
+		_ = s.repo.RevokeSessionsByDevice(ctx, schoolID, userID, deviceID)
 	}
 	return nil
 }
@@ -263,7 +267,7 @@ func (s *Service) issueTokens(ctx context.Context, user *User, dev DeviceInput) 
 
 	now := time.Now()
 	session := &AuthSession{
-		ID: uuid.New(), SchoolID: schoolID, UserID: user.ID, DeviceID: dev.DeviceID,
+		ID: uuid.New(), SchoolID: user.SchoolID, UserID: user.ID, DeviceID: dev.DeviceID,
 		RefreshTokenHash: sha256Hex(rawRefresh),
 		ExpiresAt:        now.Add(s.cfg.JWTRefreshTTL),
 	}

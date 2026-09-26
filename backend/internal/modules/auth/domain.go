@@ -75,9 +75,11 @@ type UserDevice struct {
 }
 
 // AuthSession stores hashed refresh tokens with rotation tracking.
+// SchoolID is nullable so platform admins (who belong to no school) can
+// hold sessions without violating the schools foreign key.
 type AuthSession struct {
 	ID                uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
-	SchoolID          uuid.UUID  `gorm:"type:uuid;not null;index" json:"school_id"`
+	SchoolID          *uuid.UUID `gorm:"type:uuid;index" json:"school_id"`
 	UserID            uuid.UUID  `gorm:"type:uuid;not null;index" json:"user_id"`
 	DeviceID          string     `gorm:"size:128" json:"device_id"`
 	RefreshTokenHash  string     `gorm:"size:128;not null" json:"-"`
