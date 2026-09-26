@@ -123,6 +123,9 @@ func (r *GormRepo) GenerateLedgers(ctx context.Context, schoolID, sessionID uuid
 				if err := tx.Create(ledger).Error; err != nil {
 					return err
 				}
+				// Mark in-run so an overlapping structure (whole-school + class)
+				// cannot create a second ledger for the same student/head.
+				seen[key] = true
 				created++
 			}
 		}
