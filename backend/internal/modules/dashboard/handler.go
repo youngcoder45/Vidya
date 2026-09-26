@@ -82,21 +82,29 @@ func (h *handler) build(ctx context.Context, schoolID uuid.UUID) (*Summary, erro
 	s := &Summary{UpcomingExams: []any{}}
 
 	// Student count (active records).
-	h.db.WithContext(ctx).Model(&struct{}{}).Table("students").
-		Where("school_id = ? AND status = ?", schoolID, "active").Count(&s.Students)
+	if err := h.db.WithContext(ctx).Model(&struct{}{}).Table("students").
+		Where("school_id = ? AND status = ?", schoolID, "active").Count(&s.Students).Error; err != nil {
+		return nil, err
+	}
 
 	// Teacher count.
-	h.db.WithContext(ctx).Model(&struct{}{}).Table("teachers").
-		Where("school_id = ? AND status = ?", schoolID, "active").Count(&s.Teachers)
+	if err := h.db.WithContext(ctx).Model(&struct{}{}).Table("teachers").
+		Where("school_id = ? AND status = ?", schoolID, "active").Count(&s.Teachers).Error; err != nil {
+		return nil, err
+	}
 
 	// Attendance today, in the school's local calendar (columns store UTC dates).
 	today := h.schoolToday(ctx, schoolID)
 	var present, total int64
-	h.db.WithContext(ctx).Model(&struct{}{}).Table("attendance_records").
-		Where("school_id = ? AND date = ?", schoolID, today).Count(&total)
-	h.db.WithContext(ctx).Model(&struct{}{}).Table("attendance_records").
+	if err := h.db.WithContext(ctx).Model(&struct{}{}).Table("attendance_records").
+		Where("school_id = ? AND date = ?", schoolID, today).Count(&total).Error; err != nil {
+		return nil, err
+	}
+	if err := h.db.WithContext(ctx).Model(&struct{}{}).Table("attendance_records").
 		Where("school_id = ? AND date = ? AND status IN ?", schoolID, today,
-			[]string{"present", "late", "half_day"}).Count(&present)
+			[]string{"present", "late", "half_day"}).Count(&present).Error; err != nil {
+		return nil, err
+	}
 	if total > 0 {
 		pct := float64(present) / float64(total) * 100
 		s.AttendanceToday = &pct
@@ -105,29 +113,37 @@ func (h *handler) build(ctx context.Context, schoolID uuid.UUID) (*Summary, erro
 	// Pending fees.
 	var dueCount int64
 	var dueAmount struct{ Total int64 }
-	h.db.WithContext(ctx).Model(&struct{}{}).Table("fee_ledgers").
+	if err := h.db.WithContext(ctx).Model(&struct{}{}).Table("fee_ledgers").
 		Where("school_id = ? AND status IN ?", schoolID, []string{"due", "partial"}).
-		Count(&dueCount)
-	h.db.WithContext(ctx).Model(&struct{}{}).Table("fee_ledgers").
+		Count(&dueCount).Error; err != nil {
+		return nil, err
+	}
+	if err := h.db.WithContext(ctx).Model(&struct{}{}).Table("fee_ledgers").
 		Select("COALESCE(SUM(amount_inr - paid_amount_inr - concession_inr), 0) AS total").
 		Where("school_id = ? AND status IN ?", schoolID, []string{"due", "partial"}).
-		Scan(&dueAmount)
+		Scan(&dueAmount).Error; err != nil {
+		return nil, err
+	}
 	s.PendingFees = &FeeTotals{Count: dueCount, AmountINR: dueAmount.Total}
 
 	// Recent announcements.
-	h.db.WithContext(ctx).Model(&struct{}{}).Table("announcements").
+	if err := h.db.WithContext(ctx).Model(&struct{}{}).Table("announcements").
 		Select("id, title, publish_at").
 		Where("school_id = ? AND status = ?", schoolID, "published").
 		Order("publish_at DESC").Limit(5).
-		Scan(&s.RecentAnnouncements)
+		Scan(&s.RecentAnnouncements).Error; err != nil {
+		return nil, err
+	}
 
 	// Revenue this month.
 	monthStart := time.Date(today.Year(), today.Month(), 1, 0, 0, 0, 0, time.UTC)
 	var collected struct{ Total int64 }
-	h.db.WithContext(ctx).Model(&struct{}{}).Table("payments").
+	if err := h.db.WithContext(ctx).Model(&struct{}{}).Table("payments").
 		Select("COALESCE(SUM(amount_inr), 0) AS total").
 		Where("school_id = ? AND paid_at >= ?", schoolID, monthStart).
-		Scan(&collected)
+		Scan(&collected).Error; err != nil {
+		return nil, err
+	}
 	rate := 0.0
 	if dueAmount.Total+collected.Total > 0 {
 		rate = float64(collected.Total) / float64(dueAmount.Total+collected.Total) * 100
