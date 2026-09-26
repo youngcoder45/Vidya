@@ -39,7 +39,15 @@ func (r *GormRepo) UpsertDaily(ctx context.Context, records []AttendanceRecord) 
 			{Name: "school_id"}, {Name: "class_division_id"},
 			{Name: "student_id"}, {Name: "date"},
 		},
-		DoUpdates: clause.AssignmentColumns([]string{"status", "subject_id", "edited_by", "edited_at", "updated_at"}),
+		// On a re-mark, record who edited it and when (the handler only sets
+		// MarkedBy, so EXCLUDED.edited_by would be null).
+		DoUpdates: clause.Assignments(map[string]any{
+			"status":     gorm.Expr("EXCLUDED.status"),
+			"subject_id": gorm.Expr("EXCLUDED.subject_id"),
+			"edited_by":  gorm.Expr("EXCLUDED.marked_by"),
+			"edited_at":  gorm.Expr("NOW()"),
+			"updated_at": gorm.Expr("NOW()"),
+		}),
 	}).Create(&records).Error
 }
 
