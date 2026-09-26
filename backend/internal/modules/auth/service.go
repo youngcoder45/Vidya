@@ -30,6 +30,10 @@ var (
 	ErrInvalidRefresh = errors.New("auth: invalid refresh token")
 	// ErrPasswordResetUnsupported guards the not-yet-implemented reset flow.
 	ErrPasswordResetUnsupported = errors.New("auth: password reset not implemented")
+
+	// dummyHash equalizes bcrypt timing on unknown identifiers so login does
+	// not reveal whether an account exists.
+	dummyHash, _ = passwd.Hash("not-a-real-password")
 )
 
 // DeviceInput describes the calling device for login/session tracking.
@@ -70,6 +74,7 @@ func (s *Service) Login(ctx context.Context, identifier, password string, dev De
 	user, err := s.repo.FindUserByIdentity(ctx, nil, identifier)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) || errors.Is(err, ErrAmbiguousIdentity) {
+			passwd.Verify(dummyHash, password) // constant-ish time
 			return nil, ErrInvalidCredentials
 		}
 		return nil, err
