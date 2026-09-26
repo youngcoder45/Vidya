@@ -103,7 +103,7 @@ CREATE TABLE user_roles (
     school_id               UUID NOT NULL REFERENCES schools(id),
     user_id                 UUID NOT NULL REFERENCES users(id),
     role_id                 UUID NOT NULL REFERENCES roles(id),
-    scope_class_division_id UUID REFERENCES class_divisions(id), -- nullable: teacher class scope
+    scope_class_division_id UUID, -- nullable: teacher class scope (FK added after class_divisions exists)
     created_at              TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_user_roles_user ON user_roles (school_id, user_id);
@@ -178,7 +178,7 @@ CREATE TABLE class_divisions (
     session_id        UUID NOT NULL REFERENCES academic_sessions(id),
     class_group_id    UUID NOT NULL REFERENCES class_groups(id),
     division_id       UUID NOT NULL REFERENCES divisions(id),
-    class_teacher_id  UUID REFERENCES teachers(id),
+    class_teacher_id  UUID, -- FK added after teachers exists
     strength          INT NOT NULL DEFAULT 0,
     created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (school_id, session_id, class_group_id, division_id)
@@ -209,6 +209,15 @@ CREATE TABLE teachers (
     updated_at             TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_teachers_school ON teachers (school_id);
+
+-- Deferred FKs: these tables reference each other in a cycle, so the
+-- constraints are added once both sides exist.
+ALTER TABLE class_divisions
+    ADD CONSTRAINT fk_class_divisions_teacher
+    FOREIGN KEY (class_teacher_id) REFERENCES teachers(id);
+ALTER TABLE user_roles
+    ADD CONSTRAINT fk_user_roles_scope
+    FOREIGN KEY (scope_class_division_id) REFERENCES class_divisions(id);
 
 CREATE TABLE class_subjects (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
