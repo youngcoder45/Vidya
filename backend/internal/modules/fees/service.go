@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/schoolos/backend/internal/pkg/audit"
 )
 
 // ErrOutstandingMismatch is returned when allocations don't match the
@@ -91,15 +93,16 @@ func (g *RazorpayGateway) CreateOrder(ctx context.Context, in CreateOrderInput) 
 
 // Service implements fees use cases.
 type Service struct {
-	repo    Repository
-	gateway PaymentGateway
+	repo          Repository
+	gateway       PaymentGateway
 	webhookSecret string
-	log     *slog.Logger
+	audit         *audit.Writer
+	log           *slog.Logger
 }
 
 // NewService wires the fees service.
-func NewService(repo Repository, gateway PaymentGateway, webhookSecret string, log *slog.Logger) *Service {
-	return &Service{repo: repo, gateway: gateway, webhookSecret: webhookSecret, log: log}
+func NewService(repo Repository, gateway PaymentGateway, webhookSecret string, auditWriter *audit.Writer, log *slog.Logger) *Service {
+	return &Service{repo: repo, gateway: gateway, webhookSecret: webhookSecret, audit: auditWriter, log: log}
 }
 
 // OfflinePaymentInput is a cash/UPI/cheque payment captured by office staff.
@@ -130,6 +133,10 @@ func (s *Service) CaptureOfflinePayment(ctx context.Context, schoolID uuid.UUID,
 	if err := s.captureWithReceiptRetry(ctx, schoolID, p, allocations, updates); err != nil {
 		return nil, err
 	}
+	s.audit.Record(ctx, audit.Entry{
+		SchoolID: &schoolID, UserID: &in.RecordedBy, Action: "fees.offline_payment",
+		EntityType: "payment", EntityID: p.ID.String(),
+	})
 	return p, nil
 }
 
@@ -262,6 +269,10 @@ func (s *Service) HandleWebhook(ctx context.Context, ev RazorpayWebhookEvent) er
 	if err := s.captureWithReceiptRetry(ctx, order.SchoolID, payment, allocations, updates); err != nil {
 		return err
 	}
+	s.audit.Record(ctx, audit.Entry{
+		SchoolID: &order.SchoolID, Action: "fees.online_payment",
+		EntityType: "payment", EntityID: payment.ID.String(),
+	})
 	return s.repo.UpdateOrderStatus(ctx, order.ID, OrderCaptured)
 }
 
