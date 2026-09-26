@@ -66,10 +66,10 @@ type NotificationDelivery struct {
 // NotificationPreference is per-user opt-in per event type per channel.
 type NotificationPreference struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	SchoolID  uuid.UUID `gorm:"type:uuid;not null;index" json:"school_id"`
-	UserID    uuid.UUID `gorm:"type:uuid;not null;index" json:"user_id"`
-	EventType string    `gorm:"size:40;not null" json:"event_type"`
-	Channel   string    `gorm:"size:20;not null" json:"channel"`
+	SchoolID  uuid.UUID `gorm:"type:uuid;not null;index;uniqueIndex:idx_notif_pref,priority:1" json:"school_id"`
+	UserID    uuid.UUID `gorm:"type:uuid;not null;index;uniqueIndex:idx_notif_pref,priority:2" json:"user_id"`
+	EventType string    `gorm:"size:40;not null;uniqueIndex:idx_notif_pref,priority:3" json:"event_type"`
+	Channel   string    `gorm:"size:20;not null;uniqueIndex:idx_notif_pref,priority:4" json:"channel"`
 	Enabled   bool      `gorm:"default:true" json:"enabled"`
 }
 
