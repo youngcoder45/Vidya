@@ -103,9 +103,12 @@ func (h *handler) get(c *gin.Context) {
 		httpx.WriteError(c, err)
 		return
 	}
-	if a.Status != StatusPublished && !ctxuser.HasPermission(c.Request.Context(), "announcements.write") {
-		httpx.WriteError(c, httpx.ErrNotFound)
-		return
+	if !ctxuser.HasPermission(c.Request.Context(), "announcements.write") {
+		dueToRead := a.Status == StatusScheduled && a.PublishAt != nil && !a.PublishAt.After(time.Now())
+		if a.Status != StatusPublished && !dueToRead {
+			httpx.WriteError(c, httpx.ErrNotFound)
+			return
+		}
 	}
 	httpx.WriteJSON(c, http.StatusOK, a)
 }

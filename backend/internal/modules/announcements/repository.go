@@ -33,9 +33,11 @@ func (r *GormRepo) Create(ctx context.Context, a *Announcement) error { return r
 func (r *GormRepo) List(ctx context.Context, schoolID uuid.UUID, status string, publishedOnly bool) ([]Announcement, error) {
 	q := r.db.WithContext(ctx).Where("school_id = ?", schoolID)
 	if publishedOnly {
-		// Readers only ever see live, published announcements.
-		q = q.Where("status = ?", StatusPublished).
-			Where("(expires_at IS NULL OR expires_at > ?)", time.Now())
+		// Readers see live published posts, plus scheduled ones whose time has
+		// arrived (there is no background publisher yet).
+		now := time.Now()
+		q = q.Where("((status = ?) OR (status = ? AND publish_at <= ?))", StatusPublished, StatusScheduled, now).
+		q = q.Where("(expires_at IS NULL OR expires_at > ?)", now)
 	} else if status != "" {
 		q = q.Where("status = ?", status)
 	}
