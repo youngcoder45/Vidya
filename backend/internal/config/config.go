@@ -84,6 +84,15 @@ func Load() (*Config, error) {
 	if cfg.AppEnv == "production" && cfg.EncryptionKey == "" {
 		return nil, fmt.Errorf("config: APP_ENC_KEY required in production (32-byte AES key)")
 	}
+	if cfg.AppEnv == "production" && cfg.RazorpayWebhookSecret == "" {
+		return nil, fmt.Errorf("config: APP_RAZORPAY_WEBHOOK_SECRET required in production")
+	}
+	if cfg.AppEnv == "production" && (cfg.RazorpayKeyID == "" || cfg.RazorpayKeySecret == "") {
+		return nil, fmt.Errorf("config: APP_RAZORPAY_KEY_ID and APP_RAZORPAY_KEY_SECRET required in production")
+	}
+	if cfg.RateLimitPerMin <= 0 || cfg.AuthRateLimitPerMin <= 0 {
+		return nil, fmt.Errorf("config: rate limits must be > 0")
+	}
 	return cfg, nil
 }
 
