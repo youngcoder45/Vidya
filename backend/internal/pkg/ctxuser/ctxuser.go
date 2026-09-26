@@ -47,7 +47,7 @@ func HasPermission(ctx context.Context, required string) bool {
 		return false
 	}
 	for _, p := range c.Permissions {
-		if p == required {
+		if p == "*" || p == required {
 			return true
 		}
 		if len(p) > 2 && p[len(p)-2:] == ".*" && len(required) > len(p)-1 && required[:len(p)-1] == p[:len(p)-1] {
