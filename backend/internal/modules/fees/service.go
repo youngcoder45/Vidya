@@ -25,6 +25,9 @@ import (
 // available outstanding amount.
 var ErrOutstandingMismatch = errors.New("fees: payment amount exceeds outstanding dues")
 
+// ErrStudentNotFound is returned when the student is not in the tenant.
+var ErrStudentNotFound = errors.New("fees: student not found")
+
 // PaymentGateway abstracts an online payment provider (Razorpay today).
 type PaymentGateway interface {
 	CreateOrder(ctx context.Context, in CreateOrderInput) (*GatewayOrder, error)
@@ -117,6 +120,11 @@ type OfflinePaymentInput struct {
 // CaptureOfflinePayment validates the amount against outstanding dues and
 // records the payment (append-only) with allocations.
 func (s *Service) CaptureOfflinePayment(ctx context.Context, schoolID uuid.UUID, in OfflinePaymentInput) (*Payment, error) {
+	if ok, err := s.repo.StudentExists(ctx, schoolID, in.StudentID); err != nil {
+		return nil, err
+	} else if !ok {
+		return nil, ErrStudentNotFound
+	}
 	ledgers, err := s.repo.ListLedgersByStudent(ctx, schoolID, in.StudentID)
 	if err != nil {
 		return nil, err
@@ -163,6 +171,11 @@ type CreateOrderParams struct {
 
 // CreateOrder validates the amount and creates a gateway order.
 func (s *Service) CreateOrder(ctx context.Context, schoolID uuid.UUID, in CreateOrderParams) (*FeePaymentOrder, *GatewayOrder, error) {
+	if ok, err := s.repo.StudentExists(ctx, schoolID, in.StudentID); err != nil {
+		return nil, nil, err
+	} else if !ok {
+		return nil, nil, ErrStudentNotFound
+	}
 	ledgers, err := s.repo.ListLedgersByStudent(ctx, schoolID, in.StudentID)
 	if err != nil {
 		return nil, nil, err

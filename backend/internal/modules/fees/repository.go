@@ -21,6 +21,7 @@ type Repository interface {
 	CreateFeeStructure(ctx context.Context, s *FeeStructure) error
 	ListFeeStructures(ctx context.Context, schoolID, sessionID uuid.UUID) ([]FeeStructure, error)
 
+	StudentExists(ctx context.Context, schoolID, studentID uuid.UUID) (bool, error)
 	GenerateLedgers(ctx context.Context, schoolID, sessionID uuid.UUID) (int, error)
 	ListLedgersByStudent(ctx context.Context, schoolID, studentID uuid.UUID) ([]FeeLedger, error)
 	ListDues(ctx context.Context, schoolID, sessionID, classDivisionID uuid.UUID, status string) ([]FeeLedger, error)
@@ -65,6 +66,13 @@ func (r *GormRepo) ListFeeStructures(ctx context.Context, schoolID, sessionID uu
 // GenerateLedgers creates one ledger row per active student per applicable
 // structure for the session. Idempotent-ish: skips (student, head) pairs that
 // already have a ledger row.
+func (r *GormRepo) StudentExists(ctx context.Context, schoolID, studentID uuid.UUID) (bool, error) {
+	var n int64
+	err := r.db.WithContext(ctx).Table("students").
+		Where("school_id = ? AND id = ?", schoolID, studentID).Count(&n).Error
+	return n > 0, err
+}
+
 func (r *GormRepo) GenerateLedgers(ctx context.Context, schoolID, sessionID uuid.UUID) (int, error) {
 	var structures []FeeStructure
 	if err := r.db.WithContext(ctx).

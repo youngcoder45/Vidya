@@ -191,6 +191,10 @@ func (h *handler) createOrder(c *gin.Context) {
 			httpx.WriteError(c, httpx.NewError(http.StatusUnprocessableEntity, "OUTSTANDING_MISMATCH", "amount exceeds outstanding dues"))
 			return
 		}
+		if errors.Is(err, ErrStudentNotFound) {
+			httpx.WriteError(c, httpx.ErrNotFound)
+			return
+		}
 		httpx.WriteError(c, err)
 		return
 	}
@@ -220,6 +224,10 @@ func (h *handler) offlinePayment(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, ErrOutstandingMismatch) {
 			httpx.WriteError(c, httpx.NewError(http.StatusUnprocessableEntity, "OUTSTANDING_MISMATCH", "amount exceeds outstanding dues"))
+			return
+		}
+		if errors.Is(err, ErrStudentNotFound) {
+			httpx.WriteError(c, httpx.ErrNotFound)
 			return
 		}
 		httpx.WriteError(c, err)
