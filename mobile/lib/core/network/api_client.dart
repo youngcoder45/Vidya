@@ -23,6 +23,8 @@ class ApiClient {
 
   Future<dynamic> put(String path, {Object? body}) => _request(() => _dio.put(path, data: body));
 
+  Future<dynamic> patch(String path, {Object? body}) => _request(() => _dio.patch(path, data: body));
+
   Future<dynamic> delete(String path) => _request(() => _dio.delete(path));
 
   Future<dynamic> _request(Future<Response<dynamic>> Function() send, {bool retried = false}) async {
