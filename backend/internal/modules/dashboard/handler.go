@@ -63,6 +63,21 @@ func (h *handler) summary(c *gin.Context) {
 	httpx.WriteJSON(c, http.StatusOK, s)
 }
 
+// schoolToday resolves "today" in the tenant timezone as a UTC-midnight time
+// so comparisons against DATE columns stay correct across offsets.
+func (h *handler) schoolToday(ctx context.Context, schoolID uuid.UUID) time.Time {
+	loc := time.UTC
+	var row struct{ Timezone string }
+	if err := h.db.WithContext(ctx).Table("schools").Select("timezone").
+		Where("id = ?", schoolID).Scan(&row).Error; err == nil && row.Timezone != "" {
+		if l, e := time.LoadLocation(row.Timezone); e == nil {
+			loc = l
+		}
+	}
+	n := time.Now().In(loc)
+	return time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, time.UTC)
+}
+
 func (h *handler) build(ctx context.Context, schoolID uuid.UUID) (*Summary, error) {
 	s := &Summary{UpcomingExams: []any{}}
 
@@ -74,8 +89,8 @@ func (h *handler) build(ctx context.Context, schoolID uuid.UUID) (*Summary, erro
 	h.db.WithContext(ctx).Model(&struct{}{}).Table("teachers").
 		Where("school_id = ? AND status = ?", schoolID, "active").Count(&s.Teachers)
 
-	// Attendance today.
-	today := time.Now().UTC().Truncate(24 * time.Hour)
+	// Attendance today, in the school's local calendar (columns store UTC dates).
+	today := h.schoolToday(ctx, schoolID)
 	var present, total int64
 	h.db.WithContext(ctx).Model(&struct{}{}).Table("attendance_records").
 		Where("school_id = ? AND date = ?", schoolID, today).Count(&total)
