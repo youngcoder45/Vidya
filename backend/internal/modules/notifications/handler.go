@@ -38,6 +38,14 @@ func SubscribeToEvents(bus *events.Bus, dbRepo Repository, log *slog.Logger) {
 		if ev.UserID == uuid.Nil {
 			return
 		}
+		// Respect an explicit opt-out for in-app notifications of this event.
+		if prefs, err := dbRepo.ListPreferences(ctx, ev.SchoolID, ev.UserID); err == nil {
+			for _, p := range prefs {
+				if p.EventType == ev.Type && p.Channel == ChannelInApp && !p.Enabled {
+					return
+				}
+			}
+		}
 		n := &Notification{
 			ID: uuid.New(), SchoolID: ev.SchoolID, UserID: ev.UserID,
 			Type: ev.Type, Title: humanTitle(ev.Type),
