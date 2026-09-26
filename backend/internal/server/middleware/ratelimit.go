@@ -24,12 +24,18 @@ type RateLimiter struct {
 	log    *slog.Logger
 
 	mu    sync.Mutex
-	local map[string]int
+	local map[string]localWindow
+}
+
+// localWindow is a fixed-window counter for the in-memory fallback.
+type localWindow struct {
+	count int
+	start time.Time
 }
 
 // NewRateLimiter creates a limiter (limit requests per window).
 func NewRateLimiter(rdb *redis.Client, limit int, window time.Duration, log *slog.Logger) *RateLimiter {
-	return &RateLimiter{rdb: rdb, limit: limit, window: window, log: log, local: map[string]int{}}
+	return &RateLimiter{rdb: rdb, limit: limit, window: window, log: log, local: map[string]localWindow{}}
 }
 
 // Middleware returns a gin handler that limits per (route, user-or-IP).
@@ -78,15 +84,19 @@ func (rl *RateLimiter) allowRedis(ctx context.Context, key string) bool {
 func (rl *RateLimiter) allowLocal(key string) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	rl.local[key]++
-	if rl.local[key] > rl.limit {
-		return false
+	now := time.Now()
+	w, ok := rl.local[key]
+	if !ok || now.Sub(w.start) >= rl.window {
+		// Coarse sweep so the map cannot grow without bound.
+		if len(rl.local) > 10_000 {
+			rl.local = map[string]localWindow{}
+		}
+		rl.local[key] = localWindow{count: 1, start: now}
+		return true
 	}
-	// coarse sweep: reset counters every window
-	if len(rl.local) > 10_000 {
-		rl.local = map[string]int{}
-	}
-	return true
+	w.count++
+	rl.local[key] = w
+	return w.count <= rl.limit
 }
 
 // AuthRateLimit is a stricter limiter for authentication endpoints keyed by
