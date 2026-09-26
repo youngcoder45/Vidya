@@ -4,6 +4,7 @@ package audit
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -45,6 +46,7 @@ func (w *Writer) Record(ctx context.Context, e Entry) {
 	}
 	e.CreatedAt = time.Now().UTC()
 	if err := w.db.WithContext(ctx).Create(&e).Error; err != nil {
-		// best-effort: never fail the request because audit failed
+		// best-effort: never fail the request, but never hide the failure either
+		slog.Default().Warn("audit write failed", "action", e.Action, "err", err)
 	}
 }
