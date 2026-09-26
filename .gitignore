@@ -17,5 +17,4 @@ mobile/**/GeneratedPluginRegistrant.*
 .DS_Store
 
 # Logs
-report.md
 *.log

@@ -14,6 +14,13 @@ Legend:
 
 ---
 
+> **Progress note (2026-09-26):** A hardening pass landed across
+> authentication, payments, attendance, the event bus, CI, and migrations.
+> See [`report.md`](report.md) for the full finding-by-finding audit and the
+> remediation progress section (75 findings, many now fixed).
+
+---
+
 # 🚀 Current Focus
 
 The immediate goal is to move the existing architecture and scaffold toward a complete, production-ready School ERP.
