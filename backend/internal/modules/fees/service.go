@@ -226,7 +226,9 @@ func (s *Service) HandleWebhook(ctx context.Context, ev RazorpayWebhookEvent) er
 	p := ev.Payload.Payment.Entity
 	order, err := s.repo.GetOrderByGatewayID(ctx, p.OrderID)
 	if err != nil {
-		return err
+		// Ack unknown orders so the gateway stops retrying; alert via logs.
+		s.log.Warn("webhook for unknown order", "gateway_order_id", p.OrderID)
+		return nil
 	}
 	if order.Status == OrderCaptured {
 		return nil // idempotent: already captured
@@ -235,14 +237,21 @@ func (s *Service) HandleWebhook(ctx context.Context, ev RazorpayWebhookEvent) er
 		_ = s.repo.UpdateOrderStatus(ctx, order.ID, OrderFailed)
 		return nil
 	}
+	amountINR := p.Amount / 100
+	if amountINR != order.AmountINR {
+		s.log.Error("webhook amount mismatch — ignoring",
+			"order_id", order.ID, "expected_inr", order.AmountINR, "received_inr", amountINR)
+		return nil
+	}
 	ledgers, err := s.repo.ListLedgersByStudent(ctx, order.SchoolID, order.StudentID)
 	if err != nil {
 		return err
 	}
-	amountINR := p.Amount / 100
 	allocations, updates, err := computeAllocations(ledgers, amountINR)
 	if err != nil {
-		return err
+		// Over-allocated or inconsistent; ack and reconcile offline.
+		s.log.Error("webhook allocation failed", "order_id", order.ID, "err", err)
+		return nil
 	}
 	payment := &Payment{
 		ID: uuid.New(), SchoolID: order.SchoolID, StudentID: order.StudentID,
