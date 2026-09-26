@@ -2,7 +2,6 @@ package tenant
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -147,6 +146,3 @@ func (r *GormRepo) ListTeachers(ctx context.Context, schoolID uuid.UUID) ([]Teac
 	err := r.db.WithContext(ctx).Where("school_id = ?", schoolID).Order("employee_code ASC").Find(&out).Error
 	return out, err
 }
-
-// isNotFound reports a gorm record-not-found.
-func isNotFound(err error) bool { return errors.Is(err, gorm.ErrRecordNotFound) }

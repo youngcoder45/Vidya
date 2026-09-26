@@ -7,8 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-
-	"github.com/schoolos/backend/internal/pkg/httpx"
 )
 
 // ErrTargetClassNotFound means the promotion target class does not belong to
@@ -195,6 +193,3 @@ func (r *GormRepo) ListDocuments(ctx context.Context, schoolID, studentID uuid.U
 		Order("created_at DESC").Find(&out).Error
 	return out, err
 }
-
-// notFound maps gorm not-found to a 404 AppError.
-func notFound() error { return httpx.ErrNotFound }
