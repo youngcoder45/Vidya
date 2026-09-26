@@ -85,7 +85,8 @@ func (r *GormRepo) ListStudents(ctx context.Context, schoolID, sessionID, classD
 		q = q.Where("students.first_name ILIKE ? OR students.last_name ILIKE ? OR students.admission_no ILIKE ?", like, like, like)
 	}
 	var total int64
-	if err := q.Count(&total).Error; err != nil {
+	// Count distinct students: the enrollment join can duplicate rows.
+	if err := q.Session(&gorm.Session{}).Distinct("students.id").Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 	var out []Student
