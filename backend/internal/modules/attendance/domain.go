@@ -25,11 +25,11 @@ var ValidStatuses = map[string]bool{
 // class/division (subject-attendance is optional in v1).
 type AttendanceRecord struct {
 	ID              uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
-	SchoolID        uuid.UUID  `gorm:"type:uuid;not null;index:idx_att_class_date" json:"school_id"`
-	ClassDivisionID uuid.UUID  `gorm:"type:uuid;not null;index:idx_att_class_date" json:"class_division_id"`
+	SchoolID        uuid.UUID  `gorm:"type:uuid;not null;index:idx_att_class_date;uniqueIndex:idx_att_daily,priority:1" json:"school_id"`
+	ClassDivisionID uuid.UUID  `gorm:"type:uuid;not null;index:idx_att_class_date;uniqueIndex:idx_att_daily,priority:2" json:"class_division_id"`
 	SubjectID       *uuid.UUID `gorm:"type:uuid" json:"subject_id,omitempty"`
-	StudentID       uuid.UUID  `gorm:"type:uuid;not null;index:idx_att_student" json:"student_id"`
-	Date            time.Time  `gorm:"index:idx_att_class_date" json:"date"`
+	StudentID       uuid.UUID  `gorm:"type:uuid;not null;index:idx_att_student;uniqueIndex:idx_att_daily,priority:3" json:"student_id"`
+	Date            time.Time  `gorm:"index:idx_att_class_date;uniqueIndex:idx_att_daily,priority:4" json:"date"`
 	Status          string     `gorm:"size:20;not null" json:"status"`
 	MarkedBy        uuid.UUID  `gorm:"type:uuid;not null" json:"marked_by"`
 	EditedBy        *uuid.UUID `gorm:"type:uuid" json:"edited_by,omitempty"`
