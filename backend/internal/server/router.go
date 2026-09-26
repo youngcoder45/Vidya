@@ -24,6 +24,7 @@ import (
 func newRouter(d *deps.Deps) *gin.Engine {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
+	engine.Use(middleware.SecurityHeaders())
 	engine.Use(middleware.RequestID())
 	engine.Use(middleware.Logger(d.Log))
 	engine.Use(middleware.CORS(d.Cfg.CORSOrigins))
