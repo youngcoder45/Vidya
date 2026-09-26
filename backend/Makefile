@@ -16,6 +16,10 @@ test:
 vet:
 	go vet ./...
 
+# Apply versioned SQL migrations to the configured database.
+migrate:
+	go run ./cmd/migrate
+
 # golangci-lint (install: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest)
 lint:
 	@which golangci-lint >/dev/null 2>&1 && golangci-lint run ./... || echo "golangci-lint not installed — run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
