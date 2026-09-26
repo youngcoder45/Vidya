@@ -124,10 +124,10 @@ const (
 // Payment is an append-only money-in record.
 type Payment struct {
 	ID          uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
-	SchoolID    uuid.UUID  `gorm:"type:uuid;not null;index:idx_pay_school_time" json:"school_id"`
+	SchoolID    uuid.UUID  `gorm:"type:uuid;not null;index:idx_pay_school_time;uniqueIndex:idx_pay_receipt,priority:1" json:"school_id"`
 	StudentID   uuid.UUID  `gorm:"type:uuid;not null;index" json:"student_id"`
 	OrderID     *uuid.UUID `gorm:"type:uuid;index" json:"order_id,omitempty"`
-	ReceiptNo   string     `gorm:"size:40;uniqueIndex" json:"receipt_no"`
+	ReceiptNo   string     `gorm:"size:40;uniqueIndex:idx_pay_receipt,priority:2" json:"receipt_no"`
 	AmountINR   int64      `gorm:"not null" json:"amount_inr"`
 	Mode        string     `gorm:"size:20;not null" json:"mode"`
 	GatewayRef  string     `gorm:"size:120" json:"gateway_ref,omitempty"`
@@ -149,9 +149,9 @@ type PaymentAllocation struct {
 // Receipt is the issued receipt for a payment (PDF stored in S3).
 type Receipt struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	SchoolID  uuid.UUID `gorm:"type:uuid;not null;index" json:"school_id"`
+	SchoolID  uuid.UUID `gorm:"type:uuid;not null;index;uniqueIndex:idx_receipt_no,priority:1" json:"school_id"`
 	PaymentID uuid.UUID `gorm:"type:uuid;not null;index" json:"payment_id"`
-	ReceiptNo string    `gorm:"size:40;uniqueIndex" json:"receipt_no"`
+	ReceiptNo string    `gorm:"size:40;uniqueIndex:idx_receipt_no,priority:2" json:"receipt_no"`
 	PDFURL    string    `gorm:"size:500" json:"pdf_url,omitempty"`
 	IssuedAt  time.Time `json:"issued_at"`
 }

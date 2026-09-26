@@ -572,14 +572,15 @@ CREATE TABLE payments (
     school_id   UUID NOT NULL REFERENCES schools(id),
     student_id  UUID NOT NULL REFERENCES students(id),
     order_id    UUID REFERENCES fee_payment_orders(id),
-    receipt_no  TEXT NOT NULL UNIQUE,
+    receipt_no  TEXT NOT NULL,
     amount_inr  BIGINT NOT NULL CHECK (amount_inr > 0),
     mode        TEXT NOT NULL CHECK (mode IN ('cash','upi','card','netbanking','cheque','online')),
     gateway_ref TEXT,
     paid_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
     recorded_by UUID NOT NULL REFERENCES users(id),
     notes       TEXT,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (school_id, receipt_no)
 );
 CREATE INDEX idx_payments_school_time ON payments (school_id, paid_at DESC);
 CREATE INDEX idx_payments_student ON payments (school_id, student_id);
@@ -597,9 +598,10 @@ CREATE TABLE receipts (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     school_id  UUID NOT NULL REFERENCES schools(id),
     payment_id UUID NOT NULL REFERENCES payments(id),
-    receipt_no TEXT NOT NULL UNIQUE,
+    receipt_no TEXT NOT NULL,
     pdf_url    TEXT,
-    issued_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    issued_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (school_id, receipt_no)
 );
 CREATE INDEX idx_receipts_payment ON receipts (school_id, payment_id);
 
