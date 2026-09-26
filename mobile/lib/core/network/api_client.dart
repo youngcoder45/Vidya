@@ -25,15 +25,17 @@ class ApiClient {
 
   Future<dynamic> delete(String path) => _request(() => _dio.delete(path));
 
-  Future<dynamic> _request(Future<Response<dynamic>> Function() send) async {
+  Future<dynamic> _request(Future<Response<dynamic>> Function() send, {bool retried = false}) async {
     try {
       final response = await send();
       return response.data;
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401 && _isAuthPath(e.requestOptions.path) == false) {
+      // Refresh at most once: retrying forever on a still-401 resource would
+      // recurse without bound.
+      if (!retried && e.response?.statusCode == 401 && _isAuthPath(e.requestOptions.path) == false) {
         final refreshed = await _refreshTokens();
         if (refreshed) {
-          return _request(send);
+          return _request(send, retried: true);
         }
       }
       throw _mapError(e);
