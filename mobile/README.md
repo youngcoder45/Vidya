@@ -1,4 +1,4 @@
-# schoolos_mobile
+# vidya_mobile
 
 A new Flutter project.
 

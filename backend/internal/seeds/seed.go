@@ -10,10 +10,10 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/schoolos/backend/internal/modules/auth"
-	"github.com/schoolos/backend/internal/modules/students"
-	"github.com/schoolos/backend/internal/modules/tenant"
-	"github.com/schoolos/backend/internal/pkg/passwd"
+	"github.com/vidya/backend/internal/modules/auth"
+	"github.com/vidya/backend/internal/modules/students"
+	"github.com/vidya/backend/internal/modules/tenant"
+	"github.com/vidya/backend/internal/pkg/passwd"
 )
 
 // Permission catalog (code → name/module). Handlers reference these codes;
@@ -137,11 +137,11 @@ func seedPermissionsAndRoles(db *gorm.DB) error {
 
 func seedPlatformAdmin(db *gorm.DB) error {
 	var admin auth.User
-	err := db.Where("email = ?", "admin@schoolos.app").First(&admin).Error
+	err := db.Where("email = ?", "admin@vidya.app").First(&admin).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		hash, _ := passwd.Hash("admin12345")
 		admin = auth.User{
-			ID: uuid.New(), FullName: "Platform Admin", Email: "admin@schoolos.app",
+			ID: uuid.New(), FullName: "Platform Admin", Email: "admin@vidya.app",
 			PasswordHash: hash, Status: auth.UserActive, IsSuperadmin: true,
 		}
 		if err := db.Create(&admin).Error; err != nil {

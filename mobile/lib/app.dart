@@ -8,8 +8,8 @@ import 'features/auth/presentation/auth_controller.dart';
 
 /// Root widget. Theme and router are derived from Riverpod state, so a token
 /// or auth change re-renders the whole tree consistently.
-class SchoolOSApp extends ConsumerWidget {
-  const SchoolOSApp({super.key});
+class VidyaApp extends ConsumerWidget {
+  const VidyaApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,7 +17,7 @@ class SchoolOSApp extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
-      title: 'SchoolOS',
+      title: 'Vidya',
       debugShowCheckedModeBanner: false,
       theme: appLightTheme,
       darkTheme: appDarkTheme,

@@ -1,6 +1,6 @@
 {
-    "name": "schoolos_mobile",
-    "short_name": "schoolos_mobile",
+    "name": "vidya_mobile",
+    "short_name": "vidya_mobile",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

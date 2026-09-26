@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/schoolos/backend/internal/pkg/ctxuser"
-	"github.com/schoolos/backend/internal/pkg/httpx"
+	"github.com/vidya/backend/internal/pkg/ctxuser"
+	"github.com/vidya/backend/internal/pkg/httpx"
 )
 
 // RateLimiter is a fixed-window limiter. Redis is the source of truth when

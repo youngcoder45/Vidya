@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/schoolos/backend/internal/config"
-	"github.com/schoolos/backend/internal/db"
+	"github.com/vidya/backend/internal/config"
+	"github.com/vidya/backend/internal/db"
 )
 
 func main() {

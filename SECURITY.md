@@ -1,14 +1,14 @@
 # Security Policy
 
-Security is an important part of SchoolOS.
+Security is an important part of Vidya.
 
-SchoolOS is designed to handle sensitive information such as student records, authentication credentials, school data, and payment-related information. Please report security vulnerabilities responsibly.
+Vidya is designed to handle sensitive information such as student records, authentication credentials, school data, and payment-related information. Please report security vulnerabilities responsibly.
 
 ---
 
 ## Supported Versions
 
-SchoolOS is currently under active development.
+Vidya is currently under active development.
 
 | Version              | Supported   |
 | -------------------- | ----------- |
@@ -148,7 +148,7 @@ Security-related dependency updates should be prioritized when appropriate.
 
 This policy applies to:
 
-* SchoolOS source code
+* Vidya source code
 * Backend services
 * Flutter applications
 * Database schema and migrations
@@ -164,6 +164,6 @@ Third-party services and dependencies may have their own security reporting proc
 
 ## Thank You
 
-Responsible security research helps make SchoolOS safer for schools, administrators, teachers, students, parents, and contributors.
+Responsible security research helps make Vidya safer for schools, administrators, teachers, students, parents, and contributors.
 
 Thank you for reporting vulnerabilities responsibly.

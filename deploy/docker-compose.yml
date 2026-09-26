@@ -1,5 +1,5 @@
 # ============================================================================
-# SchoolOS — local development / MVP deployment (Stage 0)
+# Vidya — local development / MVP deployment (Stage 0)
 #
 #   docker compose up --build
 #
@@ -12,13 +12,13 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: schoolos
-      POSTGRES_PASSWORD: schoolos
-      POSTGRES_DB: schoolos
+      POSTGRES_USER: vidya
+      POSTGRES_PASSWORD: vidya
+      POSTGRES_DB: vidya
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U schoolos -d schoolos"]
+      test: ["CMD-SHELL", "pg_isready -U vidya -d vidya"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -47,9 +47,9 @@ services:
       APP_PORT: "8080"
       APP_DB_HOST: postgres
       APP_DB_PORT: "5432"
-      APP_DB_USER: schoolos
-      APP_DB_PASSWORD: schoolos
-      APP_DB_NAME: schoolos
+      APP_DB_USER: vidya
+      APP_DB_PASSWORD: vidya
+      APP_DB_NAME: vidya
       APP_REDIS_ADDR: redis:6379
       APP_JWT_SECRET: dev-secret-change-me-0123456789abcdef
       APP_SEED_ON_START: "true"

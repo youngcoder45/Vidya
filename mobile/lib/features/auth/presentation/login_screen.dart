@@ -58,7 +58,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Icon(Icons.school_rounded, size: 64, color: colors.primary),
                   SizedBox(height: context.spaceMd),
                   Text(
-                    'SchoolOS',
+                    'Vidya',
                     textAlign: TextAlign.center,
                     style: context.typography.displaySmall?.copyWith(color: colors.text),
                   ),

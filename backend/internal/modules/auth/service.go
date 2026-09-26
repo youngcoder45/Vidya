@@ -11,12 +11,12 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/schoolos/backend/internal/config"
-	"github.com/schoolos/backend/internal/pkg/audit"
-	"github.com/schoolos/backend/internal/pkg/ctxuser"
-	"github.com/schoolos/backend/internal/pkg/jwtutil"
-	"github.com/schoolos/backend/internal/pkg/passwd"
-	"github.com/schoolos/backend/internal/pkg/randutil"
+	"github.com/vidya/backend/internal/config"
+	"github.com/vidya/backend/internal/pkg/audit"
+	"github.com/vidya/backend/internal/pkg/ctxuser"
+	"github.com/vidya/backend/internal/pkg/jwtutil"
+	"github.com/vidya/backend/internal/pkg/passwd"
+	"github.com/vidya/backend/internal/pkg/randutil"
 )
 
 var (

@@ -1,6 +1,6 @@
-# SchoolOS — TODO
+# Vidya — TODO
 
-> Development roadmap and implementation checklist for SchoolOS.
+> Development roadmap and implementation checklist for Vidya.
 
 Legend:
 
@@ -552,4 +552,4 @@ For the detailed implementation roadmap, see:
 
 ---
 
-**SchoolOS** — Building a scalable, multi-tenant school management platform.
+**Vidya** — Building a scalable, multi-tenant school management platform.

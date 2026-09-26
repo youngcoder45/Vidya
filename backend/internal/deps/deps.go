@@ -9,10 +9,10 @@ import (
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 
-	"github.com/schoolos/backend/internal/config"
-	"github.com/schoolos/backend/internal/events"
-	"github.com/schoolos/backend/internal/pkg/audit"
-	"github.com/schoolos/backend/internal/pkg/jwtutil"
+	"github.com/vidya/backend/internal/config"
+	"github.com/vidya/backend/internal/events"
+	"github.com/vidya/backend/internal/pkg/audit"
+	"github.com/vidya/backend/internal/pkg/jwtutil"
 )
 
 // Deps carries all shared dependencies into module registration.

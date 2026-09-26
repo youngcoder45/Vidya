@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/schoolos/backend/internal/deps"
-	"github.com/schoolos/backend/internal/pkg/ctxuser"
-	"github.com/schoolos/backend/internal/pkg/httpx"
-	"github.com/schoolos/backend/internal/server/middleware"
+	"github.com/vidya/backend/internal/deps"
+	"github.com/vidya/backend/internal/pkg/ctxuser"
+	"github.com/vidya/backend/internal/pkg/httpx"
+	"github.com/vidya/backend/internal/server/middleware"
 )
 
 const rateWindow = time.Minute

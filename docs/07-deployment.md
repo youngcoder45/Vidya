@@ -31,7 +31,7 @@ deploy/docker-compose.monitoring.yml  (optional profile)
 └── grafana                 (dashboards: API latency, error rate, queue depth, DB)
 ```
 
-**Networking:** one bridge network `schoolos`; api exposed on `:8080`; postgres/redis NOT published to host.
+**Networking:** one bridge network `vidya`; api exposed on `:8080`; postgres/redis NOT published to host.
 
 ---
 

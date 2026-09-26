@@ -1,4 +1,4 @@
-# Running SchoolOS locally
+# Running Vidya locally
 
 Two ways to try it: **A) everything in Docker** (recommended — no Go/Flutter needed
 for the API), or **B) local dev** (Go on host). The Flutter app always needs the
@@ -62,7 +62,7 @@ Stop everything: `Ctrl+C`, then `docker compose -f deploy/docker-compose.yml dow
 (add `-v` to also wipe the database volumes).
 
 > **One-time demo creds** (seeded): school admin `principal@greenwood.edu` / `admin12345`,
-> platform admin `admin@schoolos.app` / `admin12345`.
+> platform admin `admin@vidya.app` / `admin12345`.
 
 ---
 
@@ -113,7 +113,7 @@ Android note: plain `http://` is blocked by default on Android 9+ — for dev ad
 |---|---|
 | `curl: connection refused` on 8080 | Wait for `api` container to be healthy (`docker compose ps`) |
 | Login returns 401 `INVALID_CREDENTIALS` | Seed didn't run — set `APP_SEED_ON_START=true`, recreate containers (`down -v`, `up --build`) |
-| `role "schoolos" does not exist` | The `postgres` volume predates the DB — `docker compose down -v` and up again |
+| `role "vidya" does not exist` | The `postgres` volume predates the DB — `docker compose down -v` and up again |
 | Port 5432/6379 already in use | Change `ports` in `deploy/docker-compose.yml` or stop the conflicting service |
 | Flutter: no `android/` folder | Run `flutter create . --platforms=android,ios` in `mobile/` |
 

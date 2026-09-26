@@ -11,7 +11,7 @@ import (
 )
 
 // tokenIssuer is the expected `iss` claim for access tokens.
-const tokenIssuer = "schoolos"
+const tokenIssuer = "vidya"
 
 // Claims is the JWT payload. school_id and roles[] are the primary
 // authorization inputs for tenant scoping and RBAC.

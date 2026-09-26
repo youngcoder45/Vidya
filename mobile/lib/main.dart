@@ -20,7 +20,7 @@ Future<void> main() async {
       overrides: [
         secureStoreProvider.overrideWithValue(store),
       ],
-      child: const SchoolOSApp(),
+      child: const VidyaApp(),
     ),
   );
 }

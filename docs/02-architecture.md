@@ -1,6 +1,6 @@
 # Phase 2 — System Architecture
 
-**Project:** SchoolOS — Multi-tenant School ERP SaaS
+**Project:** Vidya — Multi-tenant School ERP SaaS
 
 ---
 
@@ -35,7 +35,7 @@ flowchart LR
     end
 
     subgraph Backend
-        API[SchoolOS API - Go modular monolith]
+        API[Vidya API - Go modular monolith]
         WK[Workers: notifications,<br/>reminders, payroll, reports]
     end
 
@@ -134,7 +134,7 @@ flowchart TB
 ```mermaid
 sequenceDiagram
     participant Parent as Flutter app (parent)
-    participant API as SchoolOS API
+    participant API as Vidya API
     participant RZ as Razorpay
     participant DB as PostgreSQL
     participant RD as Redis
@@ -160,7 +160,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Admin as School admin app
-    participant API as SchoolOS API
+    participant API as Vidya API
     participant DB as PostgreSQL
     participant NOT as Notification worker
     participant FCM as FCM / Email
@@ -180,7 +180,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant T as Teacher app
-    participant API as SchoolOS API
+    participant API as Vidya API
     participant DB as PostgreSQL
 
     T->>API: GET /attendance/classes/:id/daily?date=

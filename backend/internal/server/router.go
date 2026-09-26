@@ -6,17 +6,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/schoolos/backend/internal/deps"
-	"github.com/schoolos/backend/internal/modules/announcements"
-	"github.com/schoolos/backend/internal/modules/attendance"
-	"github.com/schoolos/backend/internal/modules/auth"
-	"github.com/schoolos/backend/internal/modules/dashboard"
-	"github.com/schoolos/backend/internal/modules/fees"
-	"github.com/schoolos/backend/internal/modules/notifications"
-	"github.com/schoolos/backend/internal/modules/students"
-	"github.com/schoolos/backend/internal/modules/stubs"
-	"github.com/schoolos/backend/internal/modules/tenant"
-	"github.com/schoolos/backend/internal/server/middleware"
+	"github.com/vidya/backend/internal/deps"
+	"github.com/vidya/backend/internal/modules/announcements"
+	"github.com/vidya/backend/internal/modules/attendance"
+	"github.com/vidya/backend/internal/modules/auth"
+	"github.com/vidya/backend/internal/modules/dashboard"
+	"github.com/vidya/backend/internal/modules/fees"
+	"github.com/vidya/backend/internal/modules/notifications"
+	"github.com/vidya/backend/internal/modules/students"
+	"github.com/vidya/backend/internal/modules/stubs"
+	"github.com/vidya/backend/internal/modules/tenant"
+	"github.com/vidya/backend/internal/server/middleware"
 )
 
 // newRouter builds the Gin engine with the full middleware chain and module
@@ -41,7 +41,7 @@ func newRouter(d *deps.Deps) *gin.Engine {
 	})
 	engine.GET("/metrics", func(c *gin.Context) {
 		// Scaffold placeholder. Production: promhttp handler (see docs/07).
-		c.String(http.StatusOK, "# schoolos metrics endpoint — wire prometheus client_golang in hardening phase\n")
+		c.String(http.StatusOK, "# vidya metrics endpoint — wire prometheus client_golang in hardening phase\n")
 	})
 
 	// API v1.

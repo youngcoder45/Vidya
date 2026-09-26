@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **SchoolOS** are documented in this file.
+All notable changes to **Vidya** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/).
 
@@ -103,7 +103,7 @@ The following modules are currently designed and schema'd but remain unimplement
 
 ## [0.1.0] — Initial Architecture Release
 
-> Initial SchoolOS architecture and runnable scaffold.
+> Initial Vidya architecture and runnable scaffold.
 
 ### Added
 
@@ -236,7 +236,7 @@ Target criteria:
 
 ## Versioning
 
-SchoolOS follows **Semantic Versioning**:
+Vidya follows **Semantic Versioning**:
 
 ```text
 MAJOR.MINOR.PATCH

@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/schoolos/backend/internal/deps"
+	"github.com/vidya/backend/internal/deps"
 )
 
 // Server wraps the HTTP server.

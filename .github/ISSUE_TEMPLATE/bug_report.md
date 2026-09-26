@@ -3,7 +3,7 @@
 ````markdown
 ---
 name: Bug Report
-about: Report a reproducible problem in SchoolOS
+about: Report a reproducible problem in Vidya
 title: "[Bug]: "
 labels: bug
 assignees: ""
@@ -39,7 +39,7 @@ Go version:
 OS:
 Database:
 Redis:
-SchoolOS commit/version:
+Vidya commit/version:
 ````
 
 ### Flutter
@@ -49,7 +49,7 @@ Flutter version:
 Dart version:
 OS:
 Device:
-SchoolOS commit/version:
+Vidya commit/version:
 ```
 
 ## Logs / Error Messages

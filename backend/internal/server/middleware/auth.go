@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/schoolos/backend/internal/pkg/ctxuser"
-	"github.com/schoolos/backend/internal/pkg/httpx"
-	"github.com/schoolos/backend/internal/pkg/jwtutil"
+	"github.com/vidya/backend/internal/pkg/ctxuser"
+	"github.com/vidya/backend/internal/pkg/httpx"
+	"github.com/vidya/backend/internal/pkg/jwtutil"
 )
 
 // Auth verifies the Bearer access token and attaches its claims to the

@@ -1,4 +1,4 @@
-// SchoolOS API — composition root. Wires configuration, persistence,
+// Vidya API — composition root. Wires configuration, persistence,
 // caching, the event bus, and the HTTP server.
 package main
 
@@ -10,15 +10,15 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/schoolos/backend/internal/config"
-	"github.com/schoolos/backend/internal/db"
-	"github.com/schoolos/backend/internal/deps"
-	"github.com/schoolos/backend/internal/events"
-	"github.com/schoolos/backend/internal/modules/notifications"
-	"github.com/schoolos/backend/internal/pkg/audit"
-	"github.com/schoolos/backend/internal/pkg/jwtutil"
-	"github.com/schoolos/backend/internal/seeds"
-	"github.com/schoolos/backend/internal/server"
+	"github.com/vidya/backend/internal/config"
+	"github.com/vidya/backend/internal/db"
+	"github.com/vidya/backend/internal/deps"
+	"github.com/vidya/backend/internal/events"
+	"github.com/vidya/backend/internal/modules/notifications"
+	"github.com/vidya/backend/internal/pkg/audit"
+	"github.com/vidya/backend/internal/pkg/jwtutil"
+	"github.com/vidya/backend/internal/seeds"
+	"github.com/vidya/backend/internal/server"
 )
 
 func main() {

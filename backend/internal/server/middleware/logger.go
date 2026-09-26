@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"github.com/schoolos/backend/internal/pkg/ctxuser"
-	"github.com/schoolos/backend/internal/pkg/tenant"
+	"github.com/vidya/backend/internal/pkg/ctxuser"
+	"github.com/vidya/backend/internal/pkg/tenant"
 )
 
 // Logger emits one structured JSON log line per request with correlation

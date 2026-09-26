@@ -1,4 +1,4 @@
-module github.com/schoolos/backend
+module github.com/vidya/backend
 
 go 1.23
 

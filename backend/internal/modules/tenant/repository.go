@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/schoolos/backend/internal/pkg/httpx"
+	"github.com/vidya/backend/internal/pkg/httpx"
 )
 
 // ErrNotFound maps to a 404.

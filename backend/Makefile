@@ -5,7 +5,7 @@ dev:
 	@which air >/dev/null 2>&1 && air || go run ./cmd/server
 
 build:
-	go build -o bin/schoolos-api ./cmd/server
+	go build -o bin/vidya-api ./cmd/server
 
 run:
 	go run ./cmd/server

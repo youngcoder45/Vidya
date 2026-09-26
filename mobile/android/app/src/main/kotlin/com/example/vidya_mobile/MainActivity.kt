@@ -1,4 +1,4 @@
-package com.example.schoolos_mobile
+package com.example.vidya_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

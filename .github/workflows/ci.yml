@@ -1,5 +1,5 @@
 # ============================================================================
-# SchoolOS CI — runs on PR and main.
+# Vidya CI — runs on PR and main.
 # Jobs: backend (vet+test+build), mobile (flutter analyze+test), deploy (main).
 # ============================================================================
 
@@ -90,7 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build image
-        run: docker build -t schoolos-api:ci ./backend
+        run: docker build -t vidya-api:ci ./backend
 
   # Stage 0 deploy (VPS + docker compose). Replace with ECS deploy for Stage 1.
   deploy:
@@ -108,7 +108,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd /opt/schoolos
+            cd /opt/vidya
             git pull --ff-only
             docker compose up -d --build api
             sleep 10

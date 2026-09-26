@@ -9,10 +9,10 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/schoolos/backend/internal/deps"
-	"github.com/schoolos/backend/internal/pkg/httpx"
-	"github.com/schoolos/backend/internal/pkg/tenant"
-	"github.com/schoolos/backend/internal/server/middleware"
+	"github.com/vidya/backend/internal/deps"
+	"github.com/vidya/backend/internal/pkg/httpx"
+	"github.com/vidya/backend/internal/pkg/tenant"
+	"github.com/vidya/backend/internal/server/middleware"
 )
 
 // Register wires the dashboard route.

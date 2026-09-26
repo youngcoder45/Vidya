@@ -3,9 +3,9 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/schoolos/backend/internal/pkg/ctxuser"
-	"github.com/schoolos/backend/internal/pkg/httpx"
-	"github.com/schoolos/backend/internal/pkg/tenant"
+	"github.com/vidya/backend/internal/pkg/ctxuser"
+	"github.com/vidya/backend/internal/pkg/httpx"
+	"github.com/vidya/backend/internal/pkg/tenant"
 )
 
 // Tenant resolves the tenant scope from the authenticated user's claims and

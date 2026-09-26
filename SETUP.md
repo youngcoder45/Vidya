@@ -1,6 +1,6 @@
-# 🏫 SchoolOS — Setup Guide for Absolute Beginners
+# 🏫 Vidya — Setup Guide for Absolute Beginners
 
-This guide takes you from a **completely empty computer** to seeing the SchoolOS app
+This guide takes you from a **completely empty computer** to seeing the Vidya app
 **running in your browser** with real data (students, fees, dashboard numbers).
 
 You will install three things:
@@ -36,7 +36,7 @@ cd "C:\path\to\extracted\folder"      # Windows example
 cd ~/Desktop/extracted-folder         # Mac / Linux example
 ```
 
-> 💡 **Tip:** On Windows, extract to a simple path like `C:\schoolos` — avoid folders with odd characters. Spaces are OK if you use quotes.
+> 💡 **Tip:** On Windows, extract to a simple path like `C:\vidya` — avoid folders with odd characters. Spaces are OK if you use quotes.
 
 ---
 
@@ -197,7 +197,7 @@ lib/main.dart is being served at http://localhost:8081
 
 ## 🎉 Step 5 — See it working
 
-You should now see the **SchoolOS login screen** — green school icon, "SchoolOS", a sign-in form.
+You should now see the **Vidya login screen** — green school icon, "Vidya", a sign-in form.
 
 **Log in with the demo account:**
 
@@ -271,7 +271,7 @@ If you're zipping the project for a friend, **exclude** the junk so the zip stay
 
 ```bash
 cd /path/to/erp
-zip -r schoolos-friend.zip . \
+zip -r vidya-friend.zip . \
   -x ".git/*" "backend/bin/*" "backend/.env" \
   "mobile/.dart_tool/*" "mobile/build/*" "mobile/.idea/*" "*.iml"
 ```

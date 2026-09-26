@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/schoolos/backend/internal/pkg/jwtutil"
+	"github.com/vidya/backend/internal/pkg/jwtutil"
 )
 
 type ctxKey struct{}

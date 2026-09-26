@@ -1,6 +1,6 @@
 # Phase 4 — API Design
 
-**Base URL:** `https://api.schoolos.app/api/v1` · **Content-Type:** `application/json` · **Auth:** `Authorization: Bearer <access_token>`
+**Base URL:** `https://api.vidya.app/api/v1` · **Content-Type:** `application/json` · **Auth:** `Authorization: Bearer <access_token>`
 **Tenant header:** `X-School-ID` (optional — JWT claim is authoritative; header used for pre-auth routes & webhooks)
 
 ---
@@ -298,7 +298,7 @@ POST /webhooks/razorpay   (X-Razorpay-Signature verified with webhook secret)
   "notes": "Cash collected at office"
 }
 // 201 → receipt
-{"data": {"payment_id": "pay-4", "receipt_no": "RCP-2026-00042", "receipt_url": "https://cdn.schoolos.app/receipts/..."}}
+{"data": {"payment_id": "pay-4", "receipt_no": "RCP-2026-00042", "receipt_url": "https://cdn.vidya.app/receipts/..."}}
 ```
 
 ### POST /attendance/daily

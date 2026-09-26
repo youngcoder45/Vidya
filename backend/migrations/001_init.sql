@@ -1,5 +1,5 @@
 -- ============================================================================
--- SchoolOS — canonical production schema (Phase 3 deliverable)
+-- Vidya — canonical production schema (Phase 3 deliverable)
 -- Applied by golang-migrate in CI/CD. In dev, GORM AutoMigrate covers the
 -- implemented scaffold modules; this file is the single source of truth for
 -- the full design and for production.

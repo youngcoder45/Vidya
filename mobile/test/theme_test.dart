@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:schoolos_mobile/core/theme/app_theme.dart';
-import 'package:schoolos_mobile/core/theme/semantics/app_semantics.dart';
-import 'package:schoolos_mobile/core/theme/tokens/app_colors.dart';
-import 'package:schoolos_mobile/core/theme/tokens/app_spacing.dart';
+import 'package:vidya_mobile/core/theme/app_theme.dart';
+import 'package:vidya_mobile/core/theme/semantics/app_semantics.dart';
+import 'package:vidya_mobile/core/theme/tokens/app_colors.dart';
+import 'package:vidya_mobile/core/theme/tokens/app_spacing.dart';
 
 void main() {
   test('light semantics derive from tokens', () {

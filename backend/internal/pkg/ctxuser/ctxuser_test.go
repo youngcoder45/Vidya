@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/schoolos/backend/internal/pkg/jwtutil"
+	"github.com/vidya/backend/internal/pkg/jwtutil"
 )
 
 func withPerms(perms ...string) context.Context {

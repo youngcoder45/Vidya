@@ -1,5 +1,5 @@
-name: schoolos_mobile
-description: SchoolOS — multi-tenant school ERP (parents, teachers, admins).
+name: vidya_mobile
+description: Vidya — multi-tenant school ERP (parents, teachers, admins).
 publish_to: 'none'
 version: 0.1.0+1
 

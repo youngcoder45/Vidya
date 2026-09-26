@@ -2,7 +2,7 @@
 
 ## Our Commitment
 
-We are committed to providing a welcoming, respectful, and constructive environment for everyone who participates in the SchoolOS project.
+We are committed to providing a welcoming, respectful, and constructive environment for everyone who participates in the Vidya project.
 
 Contributors, maintainers, reviewers, issue reporters, and community members are expected to interact professionally and in good faith.
 
@@ -48,7 +48,7 @@ The following behavior is not acceptable:
 
 ## Technical Discussions
 
-SchoolOS is an engineering project, and technical disagreements are expected.
+Vidya is an engineering project, and technical disagreements are expected.
 
 When discussing an implementation:
 
@@ -129,14 +129,14 @@ This Code of Conduct applies to project-related interactions, including:
 * Commit comments
 * Documentation contributions
 * Project meetings or events
-* Official SchoolOS community spaces
-* Other spaces where an individual is representing the SchoolOS project
+* Official Vidya community spaces
+* Other spaces where an individual is representing the Vidya project
 
 ---
 
 ## Attribution
 
-This Code of Conduct is inspired by common standards used by open-source software communities and has been adapted for the SchoolOS project.
+This Code of Conduct is inspired by common standards used by open-source software communities and has been adapted for the Vidya project.
 
 ---
 

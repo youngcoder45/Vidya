@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/schoolos/backend/internal/deps"
-	"github.com/schoolos/backend/internal/pkg/httpx"
+	"github.com/vidya/backend/internal/deps"
+	"github.com/vidya/backend/internal/pkg/httpx"
 )
 
 // Register wires the not-implemented route groups.

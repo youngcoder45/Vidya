@@ -18,8 +18,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/schoolos/backend/internal/events"
-	"github.com/schoolos/backend/internal/pkg/audit"
+	"github.com/vidya/backend/internal/events"
+	"github.com/vidya/backend/internal/pkg/audit"
 )
 
 // ErrOutstandingMismatch is returned when allocations don't match the

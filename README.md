@@ -1,6 +1,6 @@
-# SchoolOS — Multi-Tenant School ERP SaaS
+# Vidya — Multi-Tenant School ERP SaaS
 
-**SchoolOS** is a production-oriented, multi-tenant **School ERP SaaS platform** built with **Flutter, Go, PostgreSQL, and Redis**.
+**Vidya** is a production-oriented, multi-tenant **School ERP SaaS platform** built with **Flutter, Go, PostgreSQL, and Redis**.
 
 It is designed as a mobile-first platform for managing schools, students, attendance, fees, announcements, notifications, dashboards, and role-based access — with an architecture designed to scale as additional modules are introduced.
 
@@ -64,7 +64,7 @@ flowchart TB
 
 ### Backend Architecture
 
-SchoolOS uses a **modular monolith** rather than a microservices-first architecture.
+Vidya uses a **modular monolith** rather than a microservices-first architecture.
 
 Each domain is isolated behind clear module boundaries while sharing a single deployable backend.
 
@@ -252,7 +252,7 @@ The system supports:
 
 ---
 
-# 🚀 How to Run SchoolOS
+# 🚀 How to Run Vidya
 
 There are two ways to run this app:
 
@@ -270,7 +270,7 @@ There are two ways to run this app:
 
 ```bash
 git clone <your-repository-url>
-cd SchoolOS
+cd Vidya
 ```
 
 ---
@@ -403,7 +403,7 @@ Password: admin12345
 ### Platform Administrator
 
 ```text
-Email:    admin@schoolos.app
+Email:    admin@vidya.app
 Password: admin12345
 ```
 
@@ -542,7 +542,7 @@ See [`docs/08-roadmap.md`](docs/08-roadmap.md) for the detailed roadmap and spri
 
 # 🏗️ Development Philosophy
 
-SchoolOS intentionally follows a **modular-monolith architecture** instead of starting with microservices.
+Vidya intentionally follows a **modular-monolith architecture** instead of starting with microservices.
 
 The goal is to provide:
 
@@ -607,6 +607,6 @@ Please keep new functionality aligned with the existing module boundaries and ar
 
 # 📄 License
 
-SchoolOS is distributed under the **SchoolOS Proprietary License**. See
+Vidya is distributed under the **Vidya Proprietary License**. See
 [`LICENSE`](LICENSE) for the full terms. Redistribution and external
 contributions require the terms described there.

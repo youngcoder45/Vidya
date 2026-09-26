@@ -11,5 +11,5 @@ class AppConfig {
 
   static const String razorpayKeyId = String.fromEnvironment('RAZORPAY_KEY_ID');
 
-  static const String appName = 'SchoolOS';
+  static const String appName = 'Vidya';
 }

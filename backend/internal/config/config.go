@@ -60,9 +60,9 @@ func Load() (*Config, error) {
 
 		DBHost:     get("APP_DB_HOST", "localhost"),
 		DBPort:     getInt("APP_DB_PORT", 5432),
-		DBUser:     get("APP_DB_USER", "schoolos"),
-		DBPassword: get("APP_DB_PASSWORD", "schoolos"),
-		DBName:     get("APP_DB_NAME", "schoolos"),
+		DBUser:     get("APP_DB_USER", "vidya"),
+		DBPassword: get("APP_DB_PASSWORD", "vidya"),
+		DBName:     get("APP_DB_NAME", "vidya"),
 		DBSSLMode:  get("APP_DB_SSLMODE", "disable"),
 
 		RedisAddr:     get("APP_REDIS_ADDR", "localhost:6379"),

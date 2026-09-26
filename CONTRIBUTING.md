@@ -1,8 +1,8 @@
-# Contributing to SchoolOS
+# Contributing to Vidya
 
-Thank you for your interest in contributing to **SchoolOS**.
+Thank you for your interest in contributing to **Vidya**.
 
-SchoolOS is a multi-tenant School ERP SaaS built with **Flutter, Go, PostgreSQL, and Redis**. Contributions are welcome, provided they follow the project's architecture, coding standards, and contribution guidelines.
+Vidya is a multi-tenant School ERP SaaS built with **Flutter, Go, PostgreSQL, and Redis**. Contributions are welcome, provided they follow the project's architecture, coding standards, and contribution guidelines.
 
 > Please read this document before opening an issue or pull request.
 
@@ -91,7 +91,7 @@ Clone the repository:
 
 ```bash
 git clone <repository-url>
-cd SchoolOS
+cd Vidya
 ```
 
 Start the infrastructure:
@@ -134,7 +134,7 @@ For the complete setup process, see [`SETUP.md`](SETUP.md).
 # Project Structure
 
 ```text
-SchoolOS/
+Vidya/
 ├── docs/                  # Architecture & engineering documentation
 ├── backend/               # Go API
 │   ├── cmd/
@@ -263,7 +263,7 @@ and separate unrelated changes into their own pull requests.
 
 # Backend Guidelines
 
-SchoolOS uses a **Go modular-monolith architecture**.
+Vidya uses a **Go modular-monolith architecture**.
 
 New backend functionality should belong to an appropriate domain module.
 
@@ -340,7 +340,7 @@ Avoid placing business logic directly inside large widget trees.
 
 # Theme System
 
-SchoolOS uses a token-driven theme system.
+Vidya uses a token-driven theme system.
 
 When adding UI:
 
@@ -372,7 +372,7 @@ New visual tokens should be added to the centralized theme system rather than sc
 
 # Database Changes
 
-Database changes require additional care because SchoolOS is multi-tenant.
+Database changes require additional care because Vidya is multi-tenant.
 
 Every schema change should consider:
 
@@ -786,7 +786,7 @@ Significant contributions may also be acknowledged in release notes.
 
 # License
 
-By contributing to SchoolOS, you agree that your contributions may be distributed under the project's applicable license.
+By contributing to Vidya, you agree that your contributions may be distributed under the project's applicable license.
 
 See [`LICENSE`](LICENSE) for the complete licensing terms.
 
@@ -802,4 +802,4 @@ If something is unclear:
 4. Check the relevant documentation under [`docs/`](docs/).
 5. Open a discussion or issue if the answer cannot be found.
 
-Thank you for contributing to SchoolOS.
+Thank you for contributing to Vidya.

@@ -1,6 +1,6 @@
 # Phase 1 — Requirements, User Stories & Use Cases
 
-**Project:** Multi-tenant School ERP SaaS ("SchoolOS")
+**Project:** Multi-tenant School ERP SaaS ("Vidya")
 **Market:** India (INR, CBSE/State boards, April–March academic sessions)
 **Platforms:** Android, iOS (mobile-first), tablet; web deferred to a later milestone
 **Status:** v1.0 target scope
@@ -9,7 +9,7 @@
 
 ## 1. Context & Goals
 
-SchoolOS is a SaaS platform that lets **multiple schools** manage operations through one
+Vidya is a SaaS platform that lets **multiple schools** manage operations through one
 product: student management, attendance, homework/assignments, examinations & results,
 fees & payments, teacher payroll, announcements, and parent/student engagement.
 
