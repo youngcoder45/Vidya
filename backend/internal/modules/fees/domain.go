@@ -111,6 +111,9 @@ type FeePaymentOrder struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
+// EvFeePaid is the domain event published after a payment is captured.
+const EvFeePaid = "fees.paid"
+
 // Payment modes.
 const (
 	ModeCash     = "cash"

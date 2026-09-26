@@ -22,6 +22,7 @@ type Repository interface {
 	ListFeeStructures(ctx context.Context, schoolID, sessionID uuid.UUID) ([]FeeStructure, error)
 
 	StudentExists(ctx context.Context, schoolID, studentID uuid.UUID) (bool, error)
+	GuardianUserIDs(ctx context.Context, schoolID, studentID uuid.UUID) ([]uuid.UUID, error)
 	GenerateLedgers(ctx context.Context, schoolID, sessionID uuid.UUID) (int, error)
 	ListLedgersByStudent(ctx context.Context, schoolID, studentID uuid.UUID) ([]FeeLedger, error)
 	ListDues(ctx context.Context, schoolID, sessionID, classDivisionID uuid.UUID, status string) ([]FeeLedger, error)
@@ -71,6 +72,17 @@ func (r *GormRepo) StudentExists(ctx context.Context, schoolID, studentID uuid.U
 	err := r.db.WithContext(ctx).Table("students").
 		Where("school_id = ? AND id = ?", schoolID, studentID).Count(&n).Error
 	return n > 0, err
+}
+
+// GuardianUserIDs returns registered parent user accounts for a student.
+func (r *GormRepo) GuardianUserIDs(ctx context.Context, schoolID, studentID uuid.UUID) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
+	err := r.db.WithContext(ctx).Table("guardians g").
+		Select("DISTINCT g.user_id").
+		Joins("JOIN student_guardians sg ON sg.guardian_id = g.id").
+		Where("g.school_id = ? AND sg.student_id = ? AND g.user_id IS NOT NULL", schoolID, studentID).
+		Scan(&ids).Error
+	return ids, err
 }
 
 func (r *GormRepo) GenerateLedgers(ctx context.Context, schoolID, sessionID uuid.UUID) (int, error) {
