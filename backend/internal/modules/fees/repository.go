@@ -123,19 +123,23 @@ func (r *GormRepo) GenerateLedgers(ctx context.Context, schoolID, sessionID uuid
 	return created, err
 }
 
-// dueDateFor derives a due date from the structure's due_day (day of month
-// anchored to the current month).
+// dueDateFor derives a due date from the structure's due_day, anchored to its
+// applicability start month when set.
 func dueDateFor(st FeeStructure) time.Time {
-	now := time.Now()
+	// Anchor to the structure's applicability start when set, otherwise today.
+	base := time.Now()
+	if st.ApplicableFrom != nil {
+		base = *st.ApplicableFrom
+	}
 	day := st.DueDay
 	if day <= 0 {
 		day = 10
 	}
-	lastDay := time.Date(now.Year(), now.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	lastDay := time.Date(base.Year(), base.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day()
 	if day > lastDay {
 		day = lastDay
 	}
-	return time.Date(now.Year(), now.Month(), day, 0, 0, 0, 0, time.UTC)
+	return time.Date(base.Year(), base.Month(), day, 0, 0, 0, 0, time.UTC)
 }
 
 func (r *GormRepo) ListLedgersByStudent(ctx context.Context, schoolID, studentID uuid.UUID) ([]FeeLedger, error) {
