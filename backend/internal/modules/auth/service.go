@@ -93,7 +93,11 @@ func (s *Service) RequestOtp(ctx context.Context, schoolID uuid.UUID, phone, pur
 	if err != nil {
 		return err
 	}
-	hash := sha256Hex(code)
+	// Hash with bcrypt: a 6-digit space makes a plain hash trivially reversible.
+	hash, err := passwd.Hash(code)
+	if err != nil {
+		return err
+	}
 	otp := &OtpCode{
 		ID: uuid.New(), SchoolID: schoolID, Phone: phone, Purpose: purpose,
 		CodeHash: hash, ExpiresAt: time.Now().Add(5 * time.Minute),
@@ -120,7 +124,7 @@ func (s *Service) VerifyOtp(ctx context.Context, schoolID uuid.UUID, phone, purp
 	if otp.VerifiedAt != nil || time.Now().After(otp.ExpiresAt) || otp.Attempts >= 3 {
 		return nil, ErrInvalidOtp
 	}
-	if otp.CodeHash != sha256Hex(code) {
+	if !passwd.Verify(otp.CodeHash, code) {
 		_ = s.repo.IncrementOtpAttempts(ctx, otp.ID)
 		return nil, ErrInvalidOtp
 	}
