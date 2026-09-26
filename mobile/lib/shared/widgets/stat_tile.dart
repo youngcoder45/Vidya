@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/theme_extensions.dart';
+import '../../core/theme/tokens/app_radii.dart';
 
 /// A labeled value tile for dashboards.
 ///
@@ -28,7 +29,7 @@ class StatTile extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(context.spaceMd),
+        borderRadius: BorderRadius.circular(AppRadii.md),
         child: Padding(
           padding: EdgeInsets.all(context.spaceMd),
           child: Column(
