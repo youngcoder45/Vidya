@@ -4,6 +4,9 @@
 
 It is designed as a mobile-first platform for managing schools, students, attendance, fees, announcements, notifications, dashboards, and role-based access — with an architecture designed to scale as additional modules are introduced.
 
+
+My Off-Campus Code :- STHC9W
+
 ![Architecture](https://img.shields.io/badge/architecture-modular--monolith-blue)
 ![Backend](https://img.shields.io/badge/backend-Go-00ADD8?logo=go\&logoColor=white)
 ![Frontend](https://img.shields.io/badge/frontend-Flutter-02569B?logo=flutter\&logoColor=white)
